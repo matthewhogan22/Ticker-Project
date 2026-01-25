@@ -3,6 +3,7 @@ from datetime import date, datetime
 import os
 from dotenv import load_dotenv
 from zoneinfo import ZoneInfo
+import time
 
 utc_time = datetime.now(ZoneInfo('UTC')) 
 
@@ -24,93 +25,110 @@ est_tz = ZoneInfo("America/New_York")
 # print(today)
 
 # NFL DATA - Stored in nfl_dict
-nfl_response = requests.get(f"{BASE_URL}/nfl/v1/games", headers=auth_headers, params={"dates[]": today})
-nfl_data = nfl_response.json()
+def get_nfl():
+    nfl_dict.clear()
+    nfl_response = requests.get(f"{BASE_URL}/nfl/v1/games", headers=auth_headers, params={"dates[]": today})
+    nfl_data = nfl_response.json()
 
-for game in nfl_data["data"]: 
-    raw_time = game["date"][11:16]
-    raw_hour = int(raw_time[0:2])
-    if int(raw_hour) > 12:
-        time = f"{int(raw_hour) - 17}{raw_time[2:]} EST"
-    else:
-        time = f"{int(raw_hour) - 5}{raw_time[2:]} EST"
+    for game in nfl_data["data"]: 
+        raw_time = game["date"][11:16]
+        raw_hour = int(raw_time[0:2])
+        if int(raw_hour) > 12:
+            time = f"{int(raw_hour) - 17}{raw_time[2:]} EST"
+        else:
+            time = f"{int(raw_hour) - 5}{raw_time[2:]} EST"
 
-    
-    home_team = game["home_team"]["abbreviation"]
-    away_team = game["visitor_team"]["abbreviation"]
+        
+        home_team = game["home_team"]["abbreviation"]
+        away_team = game["visitor_team"]["abbreviation"]
 
-    home_score = game["home_team_score"]
-    away_score = game["visitor_team_score"]
-    status = game["status"]
-    game_line = f"{home_team} vs {away_team}"
+        home_score = game["home_team_score"]
+        away_score = game["visitor_team_score"]
+        status = game["status"]
+        game_line = f"{home_team} vs {away_team}"
 
-    if (home_score == None and away_score == None):
-        dt_utc = datetime.fromisoformat(game["date"].replace("Z", "+00:00"))
-        dt_est = dt_utc.astimezone(est_tz)
-        time_str = dt_est.strftime("%I:%M %p %Z").lstrip("0")
-        score_line = f"{time_str}"
-    else:
-        score_line = f"{home_score} - {away_score} {status}"
+        if (home_score == None and away_score == None):
+            dt_utc = datetime.fromisoformat(game["date"].replace("Z", "+00:00"))
+            dt_est = dt_utc.astimezone(est_tz)
+            time_str = dt_est.strftime("%I:%M %p %Z").lstrip("0")
+            score_line = f"{time_str}"
+        else:
+            score_line = f"{home_score} - {away_score} {status}"
 
-    nfl_dict[game_line] = score_line
+        nfl_dict[game_line] = score_line
     
 
 # NBA DATA - Stored in nba_dict
-nba_response = requests.get(f"{BASE_URL}/nba/v1/games", headers=auth_headers, params={"dates[]": today})
-nba_data = nba_response.json()
+def get_nba():
+    nba_dict.clear()
+    nba_response = requests.get(f"{BASE_URL}/nba/v1/games", headers=auth_headers, params={"dates[]": today})
+    nba_data = nba_response.json()
 
-# print(nba_data)
+    # print(nba_data)
 
-for game in nba_data["data"]:
-    status = game["status"]
-    home_team = game["home_team"]["abbreviation"]
-    home_score = game["home_team_score"]
+    for game in nba_data["data"]:
+        status = game["status"]
+        home_team = game["home_team"]["abbreviation"]
+        home_score = game["home_team_score"]
 
-    away_team = game["visitor_team"]["abbreviation"]
-    away_score = game["visitor_team_score"]
+        away_team = game["visitor_team"]["abbreviation"]
+        away_score = game["visitor_team_score"]
 
-    game_line = f"{home_team} vs {away_team}"
+        game_line = f"{home_team} vs {away_team}"
 
-    if ":" in status:
-        dt_utc = datetime.fromisoformat(status.replace("Z", "+00:00"))
-        dt_est = dt_utc.astimezone(est_tz)
-        time_str = dt_est.strftime("%I:%M %p %Z").lstrip("0")
-        # print(time_str)
-        score_line = f"{home_score} - {away_score} {time_str}"
-    else:
-        score_line = f"{home_score} - {away_score} {game["time"]}"
+        if ":" in status:
+            dt_utc = datetime.fromisoformat(status.replace("Z", "+00:00"))
+            dt_est = dt_utc.astimezone(est_tz)
+            time_str = dt_est.strftime("%I:%M %p %Z").lstrip("0")
+            # print(time_str)
+            score_line = f"{home_score} - {away_score} {time_str}"
+        else:
+            score_line = f"{home_score} - {away_score} {game["time"]}"
 
-    nba_dict[game_line] = score_line
+        nba_dict[game_line] = score_line
 
 
 # MLB DATA - Stored in mlb_dict
-mlb_response = requests.get(f"{BASE_URL}/mlb/v1/games", headers=auth_headers, params={"dates[]": today})
-mlb_data = mlb_response.json()
+def get_mlb():
+    mlb_dict.clear()
+    mlb_response = requests.get(f"{BASE_URL}/mlb/v1/games", headers=auth_headers, params={"dates[]": today})
+    mlb_data = mlb_response.json()
 
-for game in mlb_data["data"]:
-    home_team = game["home_team"]["abbreviation"]
-    home_score = game["home_team_data"]["runs"]
+    for game in mlb_data["data"]:
+        home_team = game["home_team"]["abbreviation"]
+        home_score = game["home_team_data"]["runs"]
 
-    away_team = game["away_team"]["abbreviation"]
-    away_score = game["away_team_data"]["runs"]
+        away_team = game["away_team"]["abbreviation"]
+        away_score = game["away_team_data"]["runs"]
 
-    status = game["status"]
-    inning = game["period"]
+        status = game["status"]
+        inning = game["period"]
 
-    if status == "STATUS_FINAL":
-        curr_stat = "Final"
-    else:
-        curr_stat = inning
+        if status == "STATUS_FINAL":
+            curr_stat = "Final"
+        else:
+            curr_stat = inning
 
-    # print(f"{home_team} vs {away_team}")
-    # print(f"{home_score} - {away_score} {curr_stat}")
+        # print(f"{home_team} vs {away_team}")
+        # print(f"{home_score} - {away_score} {curr_stat}")
 
-    game_line = f"{home_team} vs {away_team}"
-    score_line = f"{home_score} - {away_score} {curr_stat}"
+        game_line = f"{home_team} vs {away_team}"
+        score_line = f"{home_score} - {away_score} {curr_stat}"
 
-    mlb_dict[game_line] = score_line
+        mlb_dict[game_line] = score_line
 
 
-print(nfl_dict)
-print(nba_dict)
-print(mlb_dict)
+# print(nfl_dict)
+# print(nba_dict)
+# print(mlb_dict)
+
+duration = 4
+while duration > 0:
+    get_nfl()
+    get_nba()
+    get_mlb()
+    print(nfl_dict)
+    print(nba_dict)
+    print(mlb_dict)
+    time.sleep(30)
+    duration -= 1
