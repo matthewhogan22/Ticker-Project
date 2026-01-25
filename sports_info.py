@@ -55,8 +55,6 @@ for game in nfl_data["data"]:
     nfl_dict[game_line] = score_line
     
 
-# print(nfl_dict)
-
 # NBA DATA - Stored in nba_dict
 nba_response = requests.get(f"{BASE_URL}/nba/v1/games", headers=auth_headers, params={"dates[]": today})
 nba_data = nba_response.json()
@@ -84,10 +82,9 @@ for game in nba_data["data"]:
 
     nba_dict[game_line] = score_line
 
-# print(nba_dict)
 
 # MLB DATA - Stored in mlb_dict
-mlb_response = requests.get(f"{BASE_URL}/mlb/v1/games", headers=auth_headers, params={"dates[]": "2025-06-24"})
+mlb_response = requests.get(f"{BASE_URL}/mlb/v1/games", headers=auth_headers, params={"dates[]": today})
 mlb_data = mlb_response.json()
 
 for game in mlb_data["data"]:
@@ -108,6 +105,12 @@ for game in mlb_data["data"]:
     # print(f"{home_team} vs {away_team}")
     # print(f"{home_score} - {away_score} {curr_stat}")
 
-    
+    game_line = f"{home_team} vs {away_team}"
+    score_line = f"{home_score} - {away_score} {curr_stat}"
 
-# print(mlb_data)
+    mlb_dict[game_line] = score_line
+
+
+print(nfl_dict)
+print(nba_dict)
+print(mlb_dict)
