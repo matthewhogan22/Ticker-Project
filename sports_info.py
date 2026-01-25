@@ -11,6 +11,7 @@ utc_time = datetime.now(ZoneInfo('UTC'))
 nfl_dict = {}
 nba_dict = {}
 mlb_dict = {}
+epl_dict = {}
 
 # Base variables needed across the whole code
 load_dotenv()
@@ -117,6 +118,33 @@ def get_mlb():
 
         mlb_dict[game_line] = score_line
 
+#EPL DATA - Stored in epl_dict NON FUNCTIONAL (Deprecated)
+# def get_epl():
+#     epl_team_dict = {}
+#     epl_dict.clear()
+
+#     epl_t = requests.get(f"{BASE_URL}/epl/v1/teams", headers=auth_headers, params={"season": "2025"})
+#     epl_teams = epl_t.json()
+
+#     for item in epl_teams["data"]:
+#         epl_team_dict[item["id"]] = item["name"]
+
+#     epl_response = requests.get(f"{BASE_URL}/epl/v1/games", headers=auth_headers, params={"dates[]": today})
+#     epl_data = epl_response.json()
+
+#     for game in epl_data["data"]:
+#         print(game)
+#         print(game["home_team_id"])
+#         home_id = game["home_team_id"]
+#         away_id = game["away_team_id"]
+#         home_team = epl_team_dict[home_id]
+#         away_team = epl_team_dict[away_id]
+
+#         print(f"{home_team} vs {away_team}")
+
+#     # print(epl_teams)
+#     # print(epl_data)
+
 
 # print(nfl_dict)
 # print(nba_dict)
@@ -127,8 +155,10 @@ while duration > 0:
     get_nfl()
     get_nba()
     get_mlb()
+    # get_epl()
     print(nfl_dict)
     print(nba_dict)
     print(mlb_dict)
+    # print(epl_dict)
     time.sleep(30)
     duration -= 1
