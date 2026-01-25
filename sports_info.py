@@ -9,6 +9,7 @@ utc_time = datetime.now(ZoneInfo('UTC'))
 # Data Holders for all Games
 nfl_dict = {}
 nba_dict = {}
+mlb_dict = {}
 
 # Base variables needed across the whole code
 load_dotenv()
@@ -22,10 +23,10 @@ today = date.today().isoformat()
 est_tz = ZoneInfo("America/New_York")
 # print(today)
 
-# NFL DATA - Stored in football_dict
+# NFL DATA - Stored in nfl_dict
 nfl_response = requests.get(f"{BASE_URL}/nfl/v1/games", headers=auth_headers, params={"dates[]": today})
-
 nfl_data = nfl_response.json()
+
 for game in nfl_data["data"]: 
     raw_time = game["date"][11:16]
     raw_hour = int(raw_time[0:2])
@@ -56,9 +57,8 @@ for game in nfl_data["data"]:
 
 # print(nfl_dict)
 
-# NBA DATA - Stored in basketball_dict
+# NBA DATA - Stored in nba_dict
 nba_response = requests.get(f"{BASE_URL}/nba/v1/games", headers=auth_headers, params={"dates[]": today})
-
 nba_data = nba_response.json()
 
 # print(nba_data)
@@ -84,4 +84,30 @@ for game in nba_data["data"]:
 
     nba_dict[game_line] = score_line
 
-print(nba_dict)
+# print(nba_dict)
+
+# MLB DATA - Stored in mlb_dict
+mlb_response = requests.get(f"{BASE_URL}/mlb/v1/games", headers=auth_headers, params={"dates[]": "2025-06-24"})
+mlb_data = mlb_response.json()
+
+for game in mlb_data["data"]:
+    home_team = game["home_team"]["abbreviation"]
+    home_score = game["home_team_data"]["runs"]
+
+    away_team = game["away_team"]["abbreviation"]
+    away_score = game["away_team_data"]["runs"]
+
+    status = game["status"]
+    inning = game["period"]
+
+    if status == "STATUS_FINAL":
+        curr_stat = "Final"
+    else:
+        curr_stat = inning
+
+    # print(f"{home_team} vs {away_team}")
+    # print(f"{home_score} - {away_score} {curr_stat}")
+
+    
+
+# print(mlb_data)
