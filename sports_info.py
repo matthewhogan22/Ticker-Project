@@ -11,6 +11,7 @@ utc_time = datetime.now(ZoneInfo('UTC'))
 nfl_dict = {}
 nba_dict = {}
 mlb_dict = {}
+epl_dict = {}
 
 # Base variables needed across the whole code
 
