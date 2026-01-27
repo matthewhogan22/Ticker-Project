@@ -166,6 +166,20 @@ def set_mlb_dict():
 
         mlb_dict[game_name] = game_dict
 
+def get_ncaaf_conf(team_id):
+    team = requests.get(f"https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams/{team_id}")
+    team_data = team.json()
+
+    team = team_data.get("team", {})
+    conf_standing = team.get("standingSummary")
+    if not conf_standing:
+        return None
+    if " in " not in conf_standing:
+        return None
+    conf_split = conf_standing.split(" in ")
+    conf = conf_split[1]
+    return conf
+
 def set_ncaaf_dict():
     ncaaf_dict.clear()
     ncaaf_teams_dict = {}
@@ -176,12 +190,16 @@ def set_ncaaf_dict():
         # Team Section
         home_team_raw = game["competitions"][0]["competitors"][0]
         home_team_id = home_team_raw["id"]
+        home_conf = get_ncaaf_conf(home_team_id)
+        game_dict["home_conf"] = home_conf
         home_team_name = home_team_raw["team"]["abbreviation"]
         home_score = game["competitions"][0]["competitors"][0]["score"]
         game_dict["home_score"] = home_score
 
         away_team_raw = game["competitions"][0]["competitors"][1]
         away_team_id = away_team_raw["id"]
+        away_conf = get_ncaaf_conf(away_team_id)
+        game_dict["away_conf"] = away_conf
         away_team_name = away_team_raw["team"]["abbreviation"]
         away_score = game["competitions"][0]["competitors"][1]["score"]
         game_dict["away_score"] = away_score
@@ -226,11 +244,11 @@ def set_ncaaf_dict():
 
 
 
-set_nba_dict()
-set_nfl_dict()
-set_mlb_dict()
+# set_nba_dict()
+# set_nfl_dict()
+# set_mlb_dict()
 set_ncaaf_dict()
-# print(nba_dict)
-# print(nfl_dict)
-# print(mlb_dict)
+# # print(nba_dict)
+# # print(nfl_dict)
+# # print(mlb_dict)
 print(ncaaf_dict)
