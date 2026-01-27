@@ -166,19 +166,23 @@ def set_mlb_dict():
 
         mlb_dict[game_name] = game_dict
 
-def get_ncaaf_conf(team_id):
-    team = requests.get(f"https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams/{team_id}")
-    team_data = team.json()
+def get_ncaaf_team_data(team_id):
+    r = requests.get(f"https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams/{team_id}")
+    # r.raise_for_status()
+    team_data = r.json()
 
-    team = team_data.get("team", {})
-    conf_standing = team.get("standingSummary")
-    if not conf_standing:
-        return None
-    if " in " not in conf_standing:
-        return None
-    conf_split = conf_standing.split(" in ")
-    conf = conf_split[1]
-    return conf
+    team_obj = team_data.get("team", {})
+
+    # Conference
+    conf = None
+    conf_standing = team_obj.get("standingSummary")
+    if isinstance(conf_standing, str) and " in " in conf_standing:
+        conf = conf_standing.split(" in ", 1)[1]
+
+    # Color
+    color = team_obj.get("color") or None
+
+    return conf, color
 
 def set_ncaaf_dict():
     ncaaf_dict.clear()
@@ -190,16 +194,18 @@ def set_ncaaf_dict():
         # Team Section
         home_team_raw = game["competitions"][0]["competitors"][0]
         home_team_id = home_team_raw["id"]
-        home_conf = get_ncaaf_conf(home_team_id)
+        home_conf, home_color = get_ncaaf_team_data(home_team_id)
         game_dict["home_conf"] = home_conf
+        game_dict["home_color"] = home_color
         home_team_name = home_team_raw["team"]["abbreviation"]
         home_score = game["competitions"][0]["competitors"][0]["score"]
         game_dict["home_score"] = home_score
 
         away_team_raw = game["competitions"][0]["competitors"][1]
         away_team_id = away_team_raw["id"]
-        away_conf = get_ncaaf_conf(away_team_id)
+        away_conf, away_color = get_ncaaf_team_data(away_team_id)
         game_dict["away_conf"] = away_conf
+        game_dict["away_color"] = away_color
         away_team_name = away_team_raw["team"]["abbreviation"]
         away_score = game["competitions"][0]["competitors"][1]["score"]
         game_dict["away_score"] = away_score
