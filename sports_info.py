@@ -258,3 +258,10 @@ set_ncaaf_dict()
 # # print(nfl_dict)
 # # print(mlb_dict)
 print(ncaaf_dict)
+
+
+#                                                  FEATURES TO ADD
+
+# Change it so that NCAAF team info (color and conference) is only fetched once on start up and is stored in a separate dict
+# 
+# Add a dict for NFL and NBA teams so that it grabs their color and conference/division similar to NCAAF
