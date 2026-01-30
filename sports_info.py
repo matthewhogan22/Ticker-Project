@@ -168,9 +168,7 @@ def set_mlb_dict():
 
 def get_ncaaf_team_data(team_id):
     r = requests.get(f"https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams/{team_id}")
-    # r.raise_for_status()
     team_data = r.json()
-
     team_obj = team_data.get("team", {})
 
     # Conference
@@ -178,6 +176,8 @@ def get_ncaaf_team_data(team_id):
     conf_standing = team_obj.get("standingSummary")
     if isinstance(conf_standing, str) and " in " in conf_standing:
         conf = conf_standing.split(" in ", 1)[1]
+    else:
+        conf = "Independent"
 
     # Color
     color = team_obj.get("color") or None
