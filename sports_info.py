@@ -1,7 +1,5 @@
 import requests
 from datetime import date, datetime
-import os
-from dotenv import load_dotenv
 from zoneinfo import ZoneInfo
 import time
 
