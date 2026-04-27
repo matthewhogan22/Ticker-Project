@@ -40,7 +40,7 @@ def set_nfl_dict():
         home_team_name = home_team_raw["team"]["abbreviation"]
         home_score = game["competitions"][0]["competitors"][0]["score"]
         game_dict["home_score"] = home_score
-        home_color = game["competitions"][0]["competitors"][0]["color"]
+        home_color = home_team_raw["team"]["color"]
         game_dict["home_color"] = home_color
 
         away_team_raw = game["competitions"][0]["competitors"][1]
@@ -48,7 +48,7 @@ def set_nfl_dict():
         away_team_name = away_team_raw["team"]["abbreviation"]
         away_score = game["competitions"][0]["competitors"][1]["score"]
         game_dict["away_score"] = away_score
-        away_color = game["competitions"][0]["competitors"][1]["color"]
+        away_color = away_team_raw["team"]["color"]
         game_dict["away_color"] = away_color
 
         nfl_teams_dict[home_team_id] = home_team_name
@@ -271,20 +271,20 @@ def set_ncaaf_dict():
 
 # One time calls to set each team's id and color value for ticker
 
-set_ncaaf_teams_dict()
+# set_ncaaf_teams_dict()
 
 # Repetitive calls to update score/time/other game info
 
-set_nba_dict()
-# set_nfl_dict()
+# set_nba_dict()
+set_nfl_dict()
 # set_mlb_dict()
 # set_ncaaf_dict()
 
 #Print Statements to check output
 
 # print(ncaaf_teams_dict)
-print(nba_dict)
-# print(nfl_dict)
+# print(nba_dict)
+print(nfl_dict)
 # print(mlb_dict)
 # print(ncaaf_dict)
 
