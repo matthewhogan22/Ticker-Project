@@ -275,16 +275,16 @@ def set_ncaaf_dict():
 
 # Repetitive calls to update score/time/other game info
 
-# set_nba_dict()
-set_nfl_dict()
+set_nba_dict()
+# set_nfl_dict()
 # set_mlb_dict()
 # set_ncaaf_dict()
 
 #Print Statements to check output
 
 # print(ncaaf_teams_dict)
-# print(nba_dict)
-print(nfl_dict)
+print(nba_dict)
+# print(nfl_dict)
 # print(mlb_dict)
 # print(ncaaf_dict)
 
