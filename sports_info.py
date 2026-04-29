@@ -13,6 +13,7 @@ ncaaf_dict = {}
 
 # Data Holders for all Teams
 ncaaf_teams_dict = {}
+nba_teams_dict = {}
 
 # Base variables needed across the whole code
 
@@ -127,9 +128,39 @@ def set_nba_dict():
         dt_est = dt_utc.astimezone(ZoneInfo("America/New_York"))
         tipoff_time = dt_est.strftime("%Y-%m-%d %I:%M %p")
         game_dict["game_time"] = tipoff_time
+        home_id = home_raw["id"]
+        away_id = away_raw["id"]
+        game_dict["home_id"] = home_id
+        game_dict["away_id"] = away_id
 
 
         nba_dict[game_name] = game_dict
+
+def set_nba_teams_dict():
+    nba_data = get_league_data("basketball", "nba")
+    games = nba_data["events"]
+    for game in games:
+        home_team_raw = game["competitions"][0]["competitors"][0]
+        home_team_id = home_team_raw["id"]
+        home_color = get_nba_team_data(home_team_id)
+        home_dict = {}
+        home_dict["color"] = home_color
+        nba_teams_dict[home_team_id] = home_dict
+
+        away_team_raw = game["competitions"][0]["competitors"][1]
+        away_team_id = away_team_raw["id"]
+        away_color = get_nba_team_data(away_team_id)
+        away_dict = {}
+        away_dict["color"] = away_color
+        nba_teams_dict[away_team_id] = away_dict
+
+def get_nba_team_data(team_id):
+    r = requests.get(f"https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{team_id}")
+    team_data = r.json()
+    team_obj = team_data.get("team", {})
+
+    color = team_obj.get("color") or None
+    return color
 
 def set_mlb_dict():
     mlb_dict.clear()
@@ -272,10 +303,11 @@ def set_ncaaf_dict():
 # One time calls to set each team's id and color value for ticker
 
 # set_ncaaf_teams_dict()
+set_nba_teams_dict()
 
 # Repetitive calls to update score/time/other game info
 
-set_nba_dict()
+# set_nba_dict()
 # set_nfl_dict()
 # set_mlb_dict()
 # set_ncaaf_dict()
@@ -283,7 +315,9 @@ set_nba_dict()
 #Print Statements to check output
 
 # print(ncaaf_teams_dict)
-print(nba_dict)
+print(nba_teams_dict)
+
+# print(nba_dict)
 # print(nfl_dict)
 # print(mlb_dict)
 # print(ncaaf_dict)
