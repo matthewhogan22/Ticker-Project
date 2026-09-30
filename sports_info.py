@@ -139,6 +139,26 @@ def get_team_color(team):
     return color
 
 
+def get_team_alternate_color(team):
+
+    if not team:
+        return ""
+
+    team_data = team.get(
+        "team",
+        {}
+    )
+
+    alternate_color = team_data.get(
+        "alternateColor"
+    )
+
+    if not alternate_color:
+        return ""
+
+    return alternate_color
+
+
 def get_game_state(game):
 
     competition = get_competition(
@@ -465,6 +485,14 @@ def build_basic_game(game):
         ),
 
         "away_color": get_team_color(
+            away
+        ),
+
+        "home_alternate_color": get_team_alternate_color(
+            home
+        ),
+
+        "away_alternate_color": get_team_alternate_color(
             away
         ),
 

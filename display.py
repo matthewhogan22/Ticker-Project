@@ -86,114 +86,123 @@ def hex_to_rgb(
         )
 
 
-def readable_team_rgb(
-    hex_color
+def color_brightness(
+    rgb
 ):
 
-    r, g, b = hex_to_rgb(
-        hex_color
+    r, g, b = rgb
+
+    return (
+        (r * 299)
+        + (g * 587)
+        + (b * 114)
+    ) / 1000
+
+
+def lighten_rgb(
+    rgb,
+    target_brightness=90
+):
+
+    r, g, b = rgb
+
+    current = color_brightness(
+        rgb
     )
 
-    if (
-            r == 0
-            and g == 0
-            and b == 0
+    if current >= target_brightness:
+        return rgb
+
+    blend_amount = 0.10
+
+    while blend_amount <= 0.90:
+
+        new_rgb = (
+            int(
+                r + (
+                    255 - r
+                ) * blend_amount
+            ),
+            int(
+                g + (
+                    255 - g
+                ) * blend_amount
+            ),
+            int(
+                b + (
+                    255 - b
+                ) * blend_amount
+            )
+        )
+
+        if (
+            color_brightness(
+                new_rgb
+            )
+            >= target_brightness
         ):
-    
-            return (
-                160,
-                160,
-                160
-            )
 
-    def brightness(
-        red,
-        green,
-        blue
-    ):
-
-        return (
-            (red * 299)
-            + (green * 587)
-            + (blue * 114)
-        ) / 1000
-
-    current_brightness = brightness(
-        r,
-        g,
-        b
-    )
-
-    # Already bright enough.
-    if current_brightness >= 85:
-
-        return (
-            r,
-            g,
-            b
-        )
-
-    # Gradually mix the team's real color
-    # with white until it becomes readable.
-    #
-    # This preserves the original hue instead
-    # of replacing dark colors with pure white.
-
-    blend_amount = 0.20
-
-    while (
-        current_brightness < 85
-        and blend_amount <= 0.80
-    ):
-
-        new_r = int(
-            r
-            + (
-                255 - r
-            )
-            * blend_amount
-        )
-
-        new_g = int(
-            g
-            + (
-                255 - g
-            )
-            * blend_amount
-        )
-
-        new_b = int(
-            b
-            + (
-                255 - b
-            )
-            * blend_amount
-        )
-
-        current_brightness = brightness(
-            new_r,
-            new_g,
-            new_b
-        )
-
-        if current_brightness >= 85:
-
-            return (
-                new_r,
-                new_g,
-                new_b
-            )
+            return new_rgb
 
         blend_amount += 0.10
 
-    # Final fallback if something unusual
-    # happens with the supplied color.
     return (
-        new_r,
-        new_g,
-        new_b
+        200,
+        200,
+        200
     )
 
+
+def readable_team_rgb(
+    primary_hex,
+    alternate_hex=""
+):
+
+    primary = hex_to_rgb(
+        primary_hex
+    )
+
+    primary_brightness = (
+        color_brightness(
+            primary
+        )
+    )
+
+    # Use the primary normally if it is bright enough.
+    if primary_brightness >= 90:
+        return primary
+
+    # Primary is dark. Try ESPN's alternate color.
+    if alternate_hex:
+
+        alternate = hex_to_rgb(
+            alternate_hex
+        )
+
+        alternate_brightness = (
+            color_brightness(
+                alternate
+            )
+        )
+
+        if alternate_brightness >= 90:
+            return alternate
+
+        # Neither is bright enough.
+        # Choose whichever one starts brighter.
+        if (
+            alternate_brightness
+            > primary_brightness
+        ):
+
+            return lighten_rgb(
+                alternate
+            )
+
+    # No useful alternate available.
+    return lighten_rgb(
+        primary
+    )
 
 # ---------------------------------------------------------
 # GAME TIME FORMATTING
@@ -679,11 +688,13 @@ class ScoreboardDisplay:
 
     def get_color(
         self,
-        hex_color
+        primary_color,
+        alternate_color=""
     ):
 
         rgb = readable_team_rgb(
-            hex_color
+            primary_color,
+            alternate_color
         )
 
         return graphics.Color(
@@ -967,12 +978,20 @@ class ScoreboardDisplay:
         away_color = self.get_color(
             game.get(
                 "away_color"
+            ),
+            game.get(
+                "away_alternate_color",
+                ""
             )
         )
 
         home_color = self.get_color(
             game.get(
                 "home_color"
+            ),
+            game.get(
+                "home_alternate_color",
+                ""
             )
         )
 
