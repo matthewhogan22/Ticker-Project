@@ -627,6 +627,63 @@ class ScoreboardDisplay:
     # BASIC HELPERS
     # -----------------------------------------------------
 
+    def draw_down_and_distance(
+        self,
+        x,
+        y,
+        down_and_distance
+    ):
+
+        if not down_and_distance:
+            return
+
+        try:
+
+            down_text, distance_text = (
+                down_and_distance.split(
+                    "&",
+                    1
+                )
+            )
+
+        except ValueError:
+
+            self.draw_text(
+                self.small_font,
+                x,
+                y,
+                self.gray,
+                down_and_distance
+            )
+
+            return
+
+        self.draw_text(
+            self.small_font,
+            x,
+            y,
+            self.gray,
+            down_text
+        )
+
+        self.draw_text(
+            self.small_font,
+            x + 4,
+            y,
+            self.gray,
+            "&"
+        )
+
+        # Normal next character would start at x + 8.
+        # We use x + 9 to create one extra LED pixel.
+        self.draw_text(
+            self.small_font,
+            x + 9,
+            y,
+            self.gray,
+            distance_text
+        )
+
     def get_matchup_colors(
         self,
         game
@@ -1240,6 +1297,23 @@ class ScoreboardDisplay:
                 )
             )
 
+            possession_text = (
+                game.get(
+                    "possession_text",
+                    ""
+                )
+            )
+
+            away_team = game.get(
+                "away_team",
+                ""
+            )
+
+            home_team = game.get(
+                "home_team",
+                ""
+            )
+
             # -----------------------------------------
             # AWAY TEAM
             # -----------------------------------------
@@ -1250,35 +1324,23 @@ class ScoreboardDisplay:
                 17,
                 away_color,
                 self.shorten(
-                    game.get(
-                        "away_team",
-                        ""
-                    ),
+                    away_team,
                     4
                 )
             )
 
-            away_score = str(
-                game.get(
-                    "away_score",
-                    ""
-                )
-            )
-
-            away_score_x = (
-                58
-                - (
-                    len(away_score)
-                    * 6
-                )
-            )
-
+            # Score in same region as MLB.
             self.draw_text(
                 self.font,
-                away_score_x,
+                29,
                 17,
                 self.white,
-                away_score
+                str(
+                    game.get(
+                        "away_score",
+                        ""
+                    )
+                )
             )
 
             # -----------------------------------------
@@ -1291,90 +1353,74 @@ class ScoreboardDisplay:
                 29,
                 home_color,
                 self.shorten(
-                    game.get(
-                        "home_team",
-                        ""
-                    ),
+                    home_team,
                     4
-                )
-            )
-
-            home_score = str(
-                game.get(
-                    "home_score",
-                    ""
-                )
-            )
-
-            home_score_x = (
-                58
-                - (
-                    len(home_score)
-                    * 6
                 )
             )
 
             self.draw_text(
                 self.font,
-                home_score_x,
+                29,
                 29,
                 self.white,
-                home_score
+                str(
+                    game.get(
+                        "home_score",
+                        ""
+                    )
+                )
             )
 
             # -----------------------------------------
-            # POSSESSION + DOWN/DISTANCE
+            # POSSESSION INDICATOR
             # -----------------------------------------
 
-            if (
-                possession
-                == game.get(
-                    "away_team"
-                )
-            ):
+            if possession == away_team:
 
                 self.draw_text(
                     self.small_font,
-                    26,
+                    24,
                     16,
                     self.yellow,
                     ">"
                 )
 
-                if down_and_distance:
-
-                    self.draw_text(
-                        self.small_font,
-                        31,
-                        16,
-                        self.gray,
-                        down_and_distance
-                    )
-
-            elif (
-                possession
-                == game.get(
-                    "home_team"
-                )
-            ):
+            elif possession == home_team:
 
                 self.draw_text(
                     self.small_font,
-                    26,
+                    24,
                     28,
                     self.yellow,
                     ">"
                 )
 
-                if down_and_distance:
+            # -----------------------------------------
+            # DOWN AND DISTANCE
+            # -----------------------------------------
 
-                    self.draw_text(
-                        self.small_font,
-                        31,
-                        28,
-                        self.gray,
-                        down_and_distance
+            self.draw_down_and_distance(
+                39,
+                16,
+                down_and_distance
+            )
+
+            # -----------------------------------------
+            # FIELD POSITION
+            # -----------------------------------------
+
+            if possession_text:
+
+                self.draw_text(
+                    self.small_font,
+                    39,
+                    28,
+                    self.gray,
+                    self.shorten(
+                        possession_text,
+                        6
                     )
+                )
 
         # ---------------------------------------------
         # FINAL FOOTBALL
