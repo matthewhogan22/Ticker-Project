@@ -1400,7 +1400,7 @@ class ScoreboardDisplay:
             # -----------------------------------------
 
             self.draw_down_and_distance(
-                39,
+                45,
                 16,
                 down_and_distance
             )
@@ -1411,16 +1411,51 @@ class ScoreboardDisplay:
 
             if possession_text:
 
-                self.draw_text(
-                    self.small_font,
-                    39,
-                    28,
-                    self.gray,
-                    self.shorten(
-                        possession_text,
-                        6
+                try:
+
+                    field_team, yard_line = (
+                        possession_text.rsplit(
+                            " ",
+                            1
+                        )
                     )
-                )
+
+                    # Team abbreviation
+                    self.draw_text(
+                        self.small_font,
+                        40,
+                        28,
+                        self.gray,
+                        field_team
+                    )
+
+                    # Yard line
+                    #
+                    # Three 4x6 characters normally consume
+                    # approximately 12 pixels.
+                    #
+                    # Start yardage at x=51 instead of x=52
+                    # to tighten the normal gap.
+                    self.draw_text(
+                        self.small_font,
+                        51,
+                        28,
+                        self.gray,
+                        yard_line
+                    )
+
+                except ValueError:
+
+                    self.draw_text(
+                        self.small_font,
+                        40,
+                        28,
+                        self.gray,
+                        self.shorten(
+                            possession_text,
+                            6
+                        )
+                    )
 
         # ---------------------------------------------
         # FINAL FOOTBALL
