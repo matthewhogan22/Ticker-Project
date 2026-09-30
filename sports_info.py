@@ -175,6 +175,10 @@ def set_mlb_dict():
         home_team_name = home_raw["team"]["abbreviation"]
         away_team_name = away_raw["team"]["abbreviation"]
         game_name = f"{home_team_name} vs {away_team_name}"
+        home_team_color = home_raw["team"]["color"]
+        away_team_color = away_raw["team"]["color"]
+        game_dict["home_color"] = home_team_color
+        game_dict["away_color"] = away_team_color
         home_score = home_raw["score"]
         away_score = away_raw["score"]
         game_dict["home_score"] = home_score
@@ -319,7 +323,7 @@ print(nba_teams_dict)
 
 # print(nba_dict)
 # print(nfl_dict)
-# print(mlb_dict)
+print(mlb_dict)
 # print(ncaaf_dict)
 
 
