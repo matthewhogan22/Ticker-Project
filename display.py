@@ -477,7 +477,7 @@ class ScoreboardDisplay:
         )
 
         self.draw_pixel_block(
-            45,
+            49,
             9,
             second_color,
             size=3
@@ -491,7 +491,7 @@ class ScoreboardDisplay:
         )
 
         self.draw_pixel_block(
-            39,
+            43,
             15,
             third_color,
             size=3
@@ -505,7 +505,7 @@ class ScoreboardDisplay:
         )
 
         self.draw_pixel_block(
-            51,
+            55,
             15,
             first_color,
             size=3
@@ -550,15 +550,15 @@ class ScoreboardDisplay:
             right_color = on_color
 
         self.draw_filled_circle(
-            54,
-            29,
+            53,
+            28,
             left_color,
             radius=1
         )
 
         self.draw_filled_circle(
-            61,
-            29,
+            60,
+            28,
             right_color,
             radius=1
         )
