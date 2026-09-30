@@ -75,35 +75,21 @@ def hex_to_rgb(
 # FONT LOCATION
 # ---------------------------------------------------------
 
-def find_font(
-    filename
-):
+def find_font(filename):
 
-    possible_locations = [
+    font_path = (
+        f"/home/matthewhogan/"
+        f"rpi-rgb-led-matrix/fonts/"
+        f"{filename}"
+    )
 
-        # Common Raspberry Pi locations
-        f"/home/pi/rpi-rgb-led-matrix/fonts/{filename}",
+    if not os.path.exists(font_path):
 
-        # Search other Linux users
-        f"/home/*/rpi-rgb-led-matrix/fonts/{filename}",
-
-        # If repository is somewhere else
-        f"/opt/rpi-rgb-led-matrix/fonts/{filename}",
-    ]
-
-    for pattern in possible_locations:
-
-        matches = glob.glob(
-            pattern
+        raise FileNotFoundError(
+            f"Could not find RGB matrix font: {font_path}"
         )
 
-        if matches:
-
-            return matches[0]
-
-    raise FileNotFoundError(
-        f"Could not find RGB matrix font: {filename}"
-    )
+    return font_path
 
 
 # ---------------------------------------------------------
@@ -147,7 +133,7 @@ class ScoreboardDisplay:
             "adafruit-hat"
         )
 
-        options.gpio_slowdown = 2
+        options.gpio_slowdown = 4
 
         options.brightness = (
             brightness
