@@ -1,3 +1,4 @@
+import copy
 import json
 import os
 import tempfile
@@ -20,6 +21,7 @@ DEFAULT_SETTINGS = {
     },
     "display": {
         "seconds_per_game": 8,
+        "game_filter": "live_upcoming",
     }
 }
 
@@ -34,7 +36,9 @@ def load_settings():
 
     if not os.path.exists(SETTINGS_FILE):
         save_settings(DEFAULT_SETTINGS)
-        return DEFAULT_SETTINGS.copy()
+        return copy.deepcopy(
+            DEFAULT_SETTINGS
+        )
 
     try:
         with open(
@@ -49,7 +53,9 @@ def load_settings():
         json.JSONDecodeError,
         OSError
     ):
-        return DEFAULT_SETTINGS.copy()
+        return copy.deepcopy(
+            DEFAULT_SETTINGS
+        )
 
     # Make sure required sections exist.
     settings.setdefault(
@@ -73,6 +79,11 @@ def load_settings():
     settings["display"].setdefault(
         "seconds_per_game",
         DEFAULT_SETTINGS["display"]["seconds_per_game"]
+    )
+
+    settings["display"].setdefault(
+        "game_filter",
+        DEFAULT_SETTINGS["display"]["game_filter"]
     )
 
     return settings

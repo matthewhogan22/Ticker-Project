@@ -1,11 +1,12 @@
 {
     "sports": {
-        "nfl": true,
-        "ncaaf": true,
-        "nba": true,
+        "nfl": false,
+        "ncaaf": false,
+        "nba": false,
         "mlb": true
     },
     "display": {
-        "seconds_per_game": 8
+        "seconds_per_game": 20,
+        "game_filter": "live_upcoming"
     }
 }

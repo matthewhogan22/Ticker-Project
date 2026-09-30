@@ -395,3 +395,66 @@ button:hover {
     }
 
 }
+
+.filter-group {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        10px;
+
+    margin-top:
+        16px;
+
+    padding:
+        16px;
+
+    background:
+        #1c2430;
+
+    border:
+        1px solid #2d3846;
+
+    border-radius:
+        10px;
+}
+
+
+.filter-group strong {
+
+    margin-bottom:
+        4px;
+}
+
+
+.radio-option {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        10px;
+
+    cursor:
+        pointer;
+}
+
+
+.radio-option input {
+
+    width:
+        18px;
+
+    height:
+        18px;
+
+    accent-color:
+        #27d17f;
+}

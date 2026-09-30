@@ -46,6 +46,25 @@ def get_league_data(sport, league):
 # HELPERS
 # ---------------------------------------------------------
 
+def get_game_state(game):
+
+    competition = game["competitions"][0]
+
+    status = competition.get(
+        "status",
+        {}
+    )
+
+    status_type = status.get(
+        "type",
+        {}
+    )
+
+    return status_type.get(
+        "state",
+        ""
+    )
+
 def get_competitors(game):
 
     competition = game["competitions"][0]
@@ -208,6 +227,8 @@ def build_basic_game(game):
         "game_time": get_game_time(
             game
         ),
+
+        "state": get_game_state(game),
     }
 
     return game_data

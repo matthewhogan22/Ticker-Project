@@ -67,6 +67,26 @@ def save():
     # DISPLAY OPTIONS
     # ---------------------------------------------
 
+    game_filter = request.form.get(
+        "game_filter",
+        "live_upcoming"
+    )
+
+    valid_filters = {
+        "all",
+        "live_upcoming",
+        "live"
+    }
+
+    if game_filter not in valid_filters:
+        game_filter = "live_upcoming"
+
+    settings[
+        "display"
+    ][
+        "game_filter"
+    ] = game_filter
+
     try:
 
         seconds_per_game = int(

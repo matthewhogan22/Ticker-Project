@@ -16,6 +16,27 @@ SPORT_ORDER = [
     "mlb",
 ]
 
+def should_show_game(game, game_filter):
+
+    state = game.get(
+        "state",
+        ""
+    )
+
+    if game_filter == "all":
+        return True
+
+    if game_filter == "live":
+        return state == "in"
+
+    if game_filter == "live_upcoming":
+        return state in (
+            "pre",
+            "in"
+        )
+
+    return True
+
 
 def get_enabled_sports(
     settings
@@ -156,6 +177,24 @@ def main():
                 # while it was currently cycling.
                 if not sport_enabled:
                     break
+
+                game_filter = (
+                    latest_settings
+                    .get(
+                        "display",
+                        {}
+                    )
+                    .get(
+                        "game_filter",
+                        "live_upcoming"
+                    )
+                )
+
+                if not should_show_game(
+                    game,
+                    game_filter
+                ):
+                    continue
 
                 seconds_per_game = (
                     latest_settings

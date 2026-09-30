@@ -186,6 +186,69 @@
                     Display
                 </h2>
 
+                <div class="filter-group">
+
+                    <strong>
+                        Games to Show
+                    </strong>
+
+                    <label class="radio-option">
+
+                        <input
+                            type="radio"
+                            name="game_filter"
+                            value="all"
+
+                            {% if settings.display.game_filter == "all" %}
+                                checked
+                            {% endif %}
+                        >
+
+                        <span>
+                            All Games
+                        </span>
+
+                    </label>
+
+
+                    <label class="radio-option">
+
+                        <input
+                            type="radio"
+                            name="game_filter"
+                            value="live_upcoming"
+
+                            {% if settings.display.game_filter == "live_upcoming" %}
+                                checked
+                            {% endif %}
+                        >
+
+                        <span>
+                            Live + Upcoming
+                        </span>
+
+                    </label>
+
+
+                    <label class="radio-option">
+
+                        <input
+                            type="radio"
+                            name="game_filter"
+                            value="live"
+
+                            {% if settings.display.game_filter == "live" %}
+                                checked
+                            {% endif %}
+                        >
+
+                        <span>
+                            Live Only
+                        </span>
+
+                    </label>
+
+                </div>
 
                 <label class="field">
 
