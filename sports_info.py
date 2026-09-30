@@ -43,56 +43,67 @@ def get_league_data(sport, league):
 
 
 # ---------------------------------------------------------
-# HELPERS
+# GENERAL HELPERS
 # ---------------------------------------------------------
 
-def get_game_state(game):
+def get_competition(game):
 
-    competition = game["competitions"][0]
-
-    status = competition.get(
-        "status",
-        {}
+    competitions = game.get(
+        "competitions",
+        []
     )
 
-    status_type = status.get(
-        "type",
-        {}
-    )
+    if not competitions:
+        return {}
 
-    return status_type.get(
-        "state",
-        ""
-    )
+    return competitions[0]
+
 
 def get_competitors(game):
 
-    competition = game["competitions"][0]
+    competition = get_competition(
+        game
+    )
 
-    competitors = competition["competitors"]
+    competitors = competition.get(
+        "competitors",
+        []
+    )
 
     home_team = None
     away_team = None
 
     for competitor in competitors:
 
-        if competitor.get("homeAway") == "home":
+        if competitor.get(
+            "homeAway"
+        ) == "home":
+
             home_team = competitor
 
-        elif competitor.get("homeAway") == "away":
+        elif competitor.get(
+            "homeAway"
+        ) == "away":
+
             away_team = competitor
 
-    # Fallback in case ESPN does not provide homeAway.
-    if home_team is None:
+    # Fallback if ESPN ever omits homeAway.
+    if home_team is None and competitors:
         home_team = competitors[0]
 
-    if away_team is None:
+    if (
+        away_team is None
+        and len(competitors) > 1
+    ):
         away_team = competitors[1]
 
     return home_team, away_team
 
 
 def get_record(team):
+
+    if not team:
+        return ""
 
     records = team.get(
         "records",
@@ -110,6 +121,9 @@ def get_record(team):
 
 def get_team_color(team):
 
+    if not team:
+        return "FFFFFF"
+
     team_data = team.get(
         "team",
         {}
@@ -125,36 +139,33 @@ def get_team_color(team):
     return color
 
 
-def get_game_time(game):
+def get_game_state(game):
 
-    raw_time = game.get(
-        "date"
+    competition = get_competition(
+        game
     )
 
-    if not raw_time:
-        return ""
-
-    dt_utc = datetime.fromisoformat(
-        raw_time.replace(
-            "Z",
-            "+00:00"
-        )
+    status = competition.get(
+        "status",
+        {}
     )
 
-    dt_eastern = dt_utc.astimezone(
-        ZoneInfo(
-            "America/New_York"
-        )
+    status_type = status.get(
+        "type",
+        {}
     )
 
-    return dt_eastern.strftime(
-        "%m/%d %I:%M %p"
+    return status_type.get(
+        "state",
+        ""
     )
 
 
 def get_status(game):
 
-    competition = game["competitions"][0]
+    competition = get_competition(
+        game
+    )
 
     status = competition.get(
         "status",
@@ -172,18 +183,112 @@ def get_status(game):
     )
 
 
+def get_short_status(game):
+
+    competition = get_competition(
+        game
+    )
+
+    status = competition.get(
+        "status",
+        {}
+    )
+
+    status_type = status.get(
+        "type",
+        {}
+    )
+
+    short_detail = status_type.get(
+        "shortDetail"
+    )
+
+    if short_detail:
+        return short_detail
+
+    return get_status(
+        game
+    )
+
+
+def get_game_time(game):
+
+    raw_time = game.get(
+        "date"
+    )
+
+    if not raw_time:
+        return ""
+
+    try:
+
+        dt_utc = datetime.fromisoformat(
+            raw_time.replace(
+                "Z",
+                "+00:00"
+            )
+        )
+
+        dt_eastern = dt_utc.astimezone(
+            ZoneInfo(
+                "America/New_York"
+            )
+        )
+
+        return dt_eastern.strftime(
+            "%m/%d %I:%M %p"
+        )
+
+    except ValueError:
+        return ""
+
+
+def get_score(team):
+
+    if not team:
+        return "0"
+
+    score = team.get(
+        "score"
+    )
+
+    if score is None:
+        return "0"
+
+    return str(
+        score
+    )
+
+
+# ---------------------------------------------------------
+# BASIC GAME OBJECT
+# ---------------------------------------------------------
+
 def build_basic_game(game):
 
     home, away = get_competitors(
         game
     )
 
-    home_name = home["team"].get(
+    if home is None or away is None:
+        return None
+
+    home_team_data = home.get(
+        "team",
+        {}
+    )
+
+    away_team_data = away.get(
+        "team",
+        {}
+    )
+
+    home_name = home_team_data.get(
         "abbreviation",
         "HOME"
     )
 
-    away_name = away["team"].get(
+    away_name = away_team_data.get(
         "abbreviation",
         "AWAY"
     )
@@ -194,14 +299,26 @@ def build_basic_game(game):
 
         "away_team": away_name,
 
-        "home_score": home.get(
-            "score",
-            "0"
+        "home_id": str(
+            home.get(
+                "id",
+                ""
+            )
         ),
 
-        "away_score": away.get(
-            "score",
-            "0"
+        "away_id": str(
+            away.get(
+                "id",
+                ""
+            )
+        ),
+
+        "home_score": get_score(
+            home
+        ),
+
+        "away_score": get_score(
+            away
         ),
 
         "home_record": get_record(
@@ -224,18 +341,36 @@ def build_basic_game(game):
             game
         ),
 
+        "short_status": get_short_status(
+            game
+        ),
+
         "game_time": get_game_time(
             game
         ),
 
-        "state": get_game_state(game),
+        # Keep the original ESPN UTC timestamp.
+        # display.py will format this for the panel.
+        "start_time": game.get(
+            "date",
+            ""
+        ),
+
+        # ESPN states:
+        #
+        # pre  = upcoming
+        # in   = live
+        # post = finished
+        "state": get_game_state(
+            game
+        ),
     }
 
     return game_data
 
 
 # ---------------------------------------------------------
-# FOOTBALL HELPERS
+# FOOTBALL INFORMATION
 # ---------------------------------------------------------
 
 def add_football_information(
@@ -243,17 +378,25 @@ def add_football_information(
     game_data
 ):
 
-    competition = game[
-        "competitions"
-    ][0]
+    competition = get_competition(
+        game
+    )
 
     situation = competition.get(
         "situation"
     )
 
-    game_data["possession"] = ""
+    game_data[
+        "possession"
+    ] = ""
 
-    game_data["down_and_distance"] = ""
+    game_data[
+        "down_and_distance"
+    ] = ""
+
+    game_data[
+        "possession_text"
+    ] = ""
 
     if not situation:
         return game_data
@@ -262,27 +405,29 @@ def add_football_information(
         "possession"
     )
 
-    home, away = get_competitors(
-        game
-    )
-
     if possession_id:
 
-        if str(home.get("id")) == str(possession_id):
+        if (
+            game_data["home_id"]
+            == str(possession_id)
+        ):
 
-            game_data["possession"] = (
-                game_data["home_team"]
-            )
+            game_data[
+                "possession"
+            ] = game_data[
+                "home_team"
+            ]
 
-        elif str(away.get("id")) == str(possession_id):
+        elif (
+            game_data["away_id"]
+            == str(possession_id)
+        ):
 
-            game_data["possession"] = (
-                game_data["away_team"]
-            )
-
-    possession_text = situation.get(
-        "possessionText"
-    )
+            game_data[
+                "possession"
+            ] = game_data[
+                "away_team"
+            ]
 
     down = situation.get(
         "down"
@@ -292,24 +437,26 @@ def add_football_information(
         "distance"
     )
 
+    possession_text = situation.get(
+        "possessionText",
+        ""
+    )
+
+    game_data[
+        "possession_text"
+    ] = possession_text
+
     if (
         down is not None
         and distance is not None
+        and down != 0
     ):
 
         game_data[
             "down_and_distance"
         ] = (
-            f"{down} & {distance}"
+            f"{down}&{distance}"
         )
-
-        if possession_text:
-
-            game_data[
-                "down_and_distance"
-            ] += (
-                f" - {possession_text}"
-            )
 
     return game_data
 
@@ -337,6 +484,9 @@ def set_nfl_dict():
         game_data = build_basic_game(
             game
         )
+
+        if game_data is None:
+            continue
 
         game_data = add_football_information(
             game,
@@ -380,6 +530,9 @@ def set_ncaaf_dict():
             game
         )
 
+        if game_data is None:
+            continue
+
         game_data = add_football_information(
             game,
             game_data
@@ -422,6 +575,9 @@ def set_nba_dict():
             game
         )
 
+        if game_data is None:
+            continue
+
         game_name = (
             f"{game_data['away_team']} "
             f"at "
@@ -458,6 +614,9 @@ def set_mlb_dict():
         game_data = build_basic_game(
             game
         )
+
+        if game_data is None:
+            continue
 
         game_name = (
             f"{game_data['away_team']} "
@@ -533,5 +692,6 @@ if __name__ == "__main__":
         except Exception as exc:
 
             print(
-                f"Error loading {sport}: {exc}"
+                f"Error loading "
+                f"{sport}: {exc}"
             )
