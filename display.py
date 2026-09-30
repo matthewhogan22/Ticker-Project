@@ -94,31 +94,104 @@ def readable_team_rgb(
         hex_color
     )
 
-    # Perceived brightness.
-    #
-    # Dark team colors such as black,
-    # navy, dark green, etc. are difficult
-    # or impossible to see on the black
-    # LED matrix background.
+    if (
+            r == 0
+            and g == 0
+            and b == 0
+        ):
+    
+            return (
+                160,
+                160,
+                160
+            )
 
-    brightness = (
-        (r * 299)
-        + (g * 587)
-        + (b * 114)
-    ) / 1000
-
-    if brightness < 75:
+    def brightness(
+        red,
+        green,
+        blue
+    ):
 
         return (
-            255,
-            255,
-            255
-        )
+            (red * 299)
+            + (green * 587)
+            + (blue * 114)
+        ) / 1000
 
-    return (
+    current_brightness = brightness(
         r,
         g,
         b
+    )
+
+    # Already bright enough.
+    if current_brightness >= 85:
+
+        return (
+            r,
+            g,
+            b
+        )
+
+    # Gradually mix the team's real color
+    # with white until it becomes readable.
+    #
+    # This preserves the original hue instead
+    # of replacing dark colors with pure white.
+
+    blend_amount = 0.20
+
+    while (
+        current_brightness < 85
+        and blend_amount <= 0.80
+    ):
+
+        new_r = int(
+            r
+            + (
+                255 - r
+            )
+            * blend_amount
+        )
+
+        new_g = int(
+            g
+            + (
+                255 - g
+            )
+            * blend_amount
+        )
+
+        new_b = int(
+            b
+            + (
+                255 - b
+            )
+            * blend_amount
+        )
+
+        current_brightness = brightness(
+            new_r,
+            new_g,
+            new_b
+        )
+
+        if current_brightness >= 85:
+
+            return (
+                new_r,
+                new_g,
+                new_b
+            )
+
+        blend_amount += 0.10
+
+    # Final fallback if something unusual
+    # happens with the supplied color.
+    return (
+        new_r,
+        new_g,
+        new_b
     )
 
 
