@@ -139,6 +139,8 @@ class ScoreboardDisplay:
             brightness
         )
 
+        options.drop_privileges = False
+
         self.matrix = RGBMatrix(
             options=options
         )
