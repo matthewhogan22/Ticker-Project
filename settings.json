@@ -1,0 +1,11 @@
+{
+    "sports": {
+        "nfl": true,
+        "ncaaf": true,
+        "nba": true,
+        "mlb": true
+    },
+    "display": {
+        "seconds_per_game": 8
+    }
+}

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Sports Ticker
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+    <main class="page">
+
+        <section class="card">
+
+            <div class="heading">
+
+                <div class="status-light"></div>
+
+                <div>
+
+                    <h1>
+                        Sports Ticker
+                    </h1>
+
+                    <p>
+                        LED Matrix Control Panel
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            {% if request.args.get('saved') %}
+
+                <div class="success">
+                    Settings saved.
+                </div>
+
+            {% endif %}
+
+
+            <form
+                method="POST"
+                action="/save"
+            >
+
+                <h2>
+                    Sports
+                </h2>
+
+                <p class="description">
+                    Select which leagues should appear
+                    on the scoreboard.
+                </p>
+
+
+                <div class="sports-list">
+
+
+                    <label class="sport">
+
+                        <div>
+
+                            <strong>
+                                NFL
+                            </strong>
+
+                            <span>
+                                National Football League
+                            </span>
+
+                        </div>
+
+                        <input
+                            type="checkbox"
+                            name="nfl"
+
+                            {% if settings.sports.nfl %}
+                                checked
+                            {% endif %}
+                        >
+
+                    </label>
+
+
+                    <label class="sport">
+
+                        <div>
+
+                            <strong>
+                                College Football
+                            </strong>
+
+                            <span>
+                                NCAA Football
+                            </span>
+
+                        </div>
+
+                        <input
+                            type="checkbox"
+                            name="ncaaf"
+
+                            {% if settings.sports.ncaaf %}
+                                checked
+                            {% endif %}
+                        >
+
+                    </label>
+
+
+                    <label class="sport">
+
+                        <div>
+
+                            <strong>
+                                NBA
+                            </strong>
+
+                            <span>
+                                National Basketball Association
+                            </span>
+
+                        </div>
+
+                        <input
+                            type="checkbox"
+                            name="nba"
+
+                            {% if settings.sports.nba %}
+                                checked
+                            {% endif %}
+                        >
+
+                    </label>
+
+
+                    <label class="sport">
+
+                        <div>
+
+                            <strong>
+                                MLB
+                            </strong>
+
+                            <span>
+                                Major League Baseball
+                            </span>
+
+                        </div>
+
+                        <input
+                            type="checkbox"
+                            name="mlb"
+
+                            {% if settings.sports.mlb %}
+                                checked
+                            {% endif %}
+                        >
+
+                    </label>
+
+
+                </div>
+
+
+                <h2 class="display-heading">
+                    Display
+                </h2>
+
+
+                <label class="field">
+
+                    <span>
+                        Seconds per game
+                    </span>
+
+                    <input
+                        type="number"
+                        name="seconds_per_game"
+                        min="2"
+                        max="60"
+                        value="{{ settings.display.seconds_per_game }}"
+                    >
+
+                </label>
+
+
+                <button type="submit">
+                    Save Settings
+                </button>
+
+
+            </form>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>

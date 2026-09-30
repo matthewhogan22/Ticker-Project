@@ -1,350 +1,516 @@
 import requests
-from datetime import date, datetime
+
+from datetime import datetime
 from zoneinfo import ZoneInfo
-import time
 
-utc_time = datetime.now(ZoneInfo('UTC')) 
 
-# Data Holders for all Games
+# ---------------------------------------------------------
+# DATA HOLDERS
+# ---------------------------------------------------------
+
 nfl_dict = {}
 nba_dict = {}
 mlb_dict = {}
 ncaaf_dict = {}
 
-# Data Holders for all Teams
-ncaaf_teams_dict = {}
-nba_teams_dict = {}
 
-# Base variables needed across the whole code
+# ---------------------------------------------------------
+# ESPN API
+# ---------------------------------------------------------
+
+ESPN_BASE_URL = (
+    "https://site.api.espn.com/apis/site/v2/sports"
+)
+
 
 def get_league_data(sport, league):
-    response = requests.get(f"https://site.api.espn.com/apis/site/v2/sports/{sport}/{league}/scoreboard")
+
+    url = (
+        f"{ESPN_BASE_URL}/"
+        f"{sport}/"
+        f"{league}/"
+        f"scoreboard"
+    )
+
+    response = requests.get(
+        url,
+        timeout=10
+    )
+
+    response.raise_for_status()
+
     return response.json()
 
-# Gets NFL Data - stored in nfl_dict
-# Current fields gathered
-#   Home Team and ID
-#   Away Team and ID
-#   Team with Current Possession of Ball
-#   Status of Game (Either Time and Quarter, Final, or Time of Game)
-#   Down, Distance, and Yard Line
-def set_nfl_dict():
-    nfl_dict.clear()
-    nfl_teams_dict = {}
-    nfl_data = get_league_data("football", "nfl")
-    games = nfl_data["events"]
-    for game in games:
-        game_dict = {}
-        # Team Section
-        home_team_raw = game["competitions"][0]["competitors"][0]
-        home_team_id = home_team_raw["id"]
-        home_team_name = home_team_raw["team"]["abbreviation"]
-        home_score = game["competitions"][0]["competitors"][0]["score"]
-        game_dict["home_score"] = home_score
-        home_color = home_team_raw["team"]["color"]
-        game_dict["home_color"] = home_color
 
-        away_team_raw = game["competitions"][0]["competitors"][1]
-        away_team_id = away_team_raw["id"]
-        away_team_name = away_team_raw["team"]["abbreviation"]
-        away_score = game["competitions"][0]["competitors"][1]["score"]
-        game_dict["away_score"] = away_score
-        away_color = away_team_raw["team"]["color"]
-        game_dict["away_color"] = away_color
+# ---------------------------------------------------------
+# HELPERS
+# ---------------------------------------------------------
 
-        nfl_teams_dict[home_team_id] = home_team_name
-        nfl_teams_dict[away_team_id] = away_team_name
-        comp = game["competitions"][0]
-        game_name = f"{home_team_name} vs {away_team_name}"
+def get_competitors(game):
 
-        home_team_record = game["competitions"][0]["competitors"][0]["records"][0]["summary"]
-        away_team_record = game["competitions"][0]["competitors"][1]["records"][0]["summary"]
-        game_dict["home_record"] = home_team_record
-        game_dict["away_record"] = away_team_record
+    competition = game["competitions"][0]
 
-        # Situation Section
-        situation = comp.get("situation")
-        possession = situation.get("possession") if situation else None
-        if possession != None:
-            possession_team = nfl_teams_dict[possession]
-        else:
-            possession_team = "N/A"
-        game_dict["possession"] = possession_team
-        down = situation.get("down") if situation else None 
-        distance = situation.get("distance") if situation else None
-        yard_line = situation.get("possessionText") if situation else None
-        down_and_dist = f"{down} & {distance} - {yard_line}"
-        game_dict["down_and_dist"] = down_and_dist
+    competitors = competition["competitors"]
 
-        # Status Section
-        status = comp.get("status")
-        time_left = status["type"]["detail"]
-        game_dict["status"] = time_left
+    home_team = None
+    away_team = None
 
-        # Misc Section
-        time = game["date"]
-        dt_utc = datetime.fromisoformat(time.replace("Z", "+00:00"))
-        dt_est = dt_utc.astimezone(ZoneInfo("America/New_York"))
-        kickoff_time = dt_est.strftime("%Y-%m-%d %I:%M %p")
-        game_dict["game_time"] = kickoff_time
+    for competitor in competitors:
+
+        if competitor.get("homeAway") == "home":
+            home_team = competitor
+
+        elif competitor.get("homeAway") == "away":
+            away_team = competitor
+
+    # Fallback in case ESPN does not provide homeAway.
+    if home_team is None:
+        home_team = competitors[0]
+
+    if away_team is None:
+        away_team = competitors[1]
+
+    return home_team, away_team
 
 
-        nfl_dict[game_name] = game_dict
-        
-    # print(nfl_dict)
+def get_record(team):
 
-def set_nba_dict():
-    nba_dict.clear()
-    nba_teams_dict = {}
-    nba_data = get_league_data("basketball", "nba")
-    games = nba_data["events"]
-    for game in games:
-        game_dict = {}
-        # Team Section
-        teams = game["competitions"][0]["competitors"]
-        home_raw = teams[0]
-        away_raw = teams[1]
-        home_team_name = home_raw["team"]["abbreviation"]
-        away_team_name = away_raw["team"]["abbreviation"]
-        game_name = f"{home_team_name} vs {away_team_name}"
-        home_score = home_raw["score"]
-        away_score = away_raw["score"]
-        game_dict["home_score"] = home_score
-        game_dict["away_score"] = away_score
-        home_record = home_raw["records"][0]["summary"]
-        away_record = away_raw["records"][0]["summary"]
-        game_dict["home_record"] = home_record
-        game_dict["away_record"] = away_record
+    records = team.get(
+        "records",
+        []
+    )
 
-        # Status Section
-        comp = game["competitions"][0]
-        status = comp.get("status")
-        time_left = status["type"]["detail"]
-        game_dict["status"] = time_left
+    if not records:
+        return ""
 
-        # Misc Section
-        time = game["date"]
-        dt_utc = datetime.fromisoformat(time.replace("Z", "+00:00"))
-        dt_est = dt_utc.astimezone(ZoneInfo("America/New_York"))
-        tipoff_time = dt_est.strftime("%Y-%m-%d %I:%M %p")
-        game_dict["game_time"] = tipoff_time
-        home_id = home_raw["id"]
-        away_id = away_raw["id"]
-        game_dict["home_id"] = home_id
-        game_dict["away_id"] = away_id
+    return records[0].get(
+        "summary",
+        ""
+    )
 
 
-        nba_dict[game_name] = game_dict
+def get_team_color(team):
 
-def set_nba_teams_dict():
-    nba_data = get_league_data("basketball", "nba")
-    games = nba_data["events"]
-    for game in games:
-        home_team_raw = game["competitions"][0]["competitors"][0]
-        home_team_id = home_team_raw["id"]
-        home_color = get_nba_team_data(home_team_id)
-        home_dict = {}
-        home_dict["color"] = home_color
-        nba_teams_dict[home_team_id] = home_dict
+    team_data = team.get(
+        "team",
+        {}
+    )
 
-        away_team_raw = game["competitions"][0]["competitors"][1]
-        away_team_id = away_team_raw["id"]
-        away_color = get_nba_team_data(away_team_id)
-        away_dict = {}
-        away_dict["color"] = away_color
-        nba_teams_dict[away_team_id] = away_dict
+    color = team_data.get(
+        "color"
+    )
 
-def get_nba_team_data(team_id):
-    r = requests.get(f"https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{team_id}")
-    team_data = r.json()
-    team_obj = team_data.get("team", {})
+    if not color:
+        return "FFFFFF"
 
-    color = team_obj.get("color") or None
     return color
 
-def set_mlb_dict():
-    mlb_dict.clear()
-    mlb_data = get_league_data("baseball", "mlb")
-    games = mlb_data["events"]
+
+def get_game_time(game):
+
+    raw_time = game.get(
+        "date"
+    )
+
+    if not raw_time:
+        return ""
+
+    dt_utc = datetime.fromisoformat(
+        raw_time.replace(
+            "Z",
+            "+00:00"
+        )
+    )
+
+    dt_eastern = dt_utc.astimezone(
+        ZoneInfo(
+            "America/New_York"
+        )
+    )
+
+    return dt_eastern.strftime(
+        "%m/%d %I:%M %p"
+    )
+
+
+def get_status(game):
+
+    competition = game["competitions"][0]
+
+    status = competition.get(
+        "status",
+        {}
+    )
+
+    status_type = status.get(
+        "type",
+        {}
+    )
+
+    return status_type.get(
+        "detail",
+        ""
+    )
+
+
+def build_basic_game(game):
+
+    home, away = get_competitors(
+        game
+    )
+
+    home_name = home["team"].get(
+        "abbreviation",
+        "HOME"
+    )
+
+    away_name = away["team"].get(
+        "abbreviation",
+        "AWAY"
+    )
+
+    game_data = {
+
+        "home_team": home_name,
+
+        "away_team": away_name,
+
+        "home_score": home.get(
+            "score",
+            "0"
+        ),
+
+        "away_score": away.get(
+            "score",
+            "0"
+        ),
+
+        "home_record": get_record(
+            home
+        ),
+
+        "away_record": get_record(
+            away
+        ),
+
+        "home_color": get_team_color(
+            home
+        ),
+
+        "away_color": get_team_color(
+            away
+        ),
+
+        "status": get_status(
+            game
+        ),
+
+        "game_time": get_game_time(
+            game
+        ),
+    }
+
+    return game_data
+
+
+# ---------------------------------------------------------
+# FOOTBALL HELPERS
+# ---------------------------------------------------------
+
+def add_football_information(
+    game,
+    game_data
+):
+
+    competition = game[
+        "competitions"
+    ][0]
+
+    situation = competition.get(
+        "situation"
+    )
+
+    game_data["possession"] = ""
+
+    game_data["down_and_distance"] = ""
+
+    if not situation:
+        return game_data
+
+    possession_id = situation.get(
+        "possession"
+    )
+
+    home, away = get_competitors(
+        game
+    )
+
+    if possession_id:
+
+        if str(home.get("id")) == str(possession_id):
+
+            game_data["possession"] = (
+                game_data["home_team"]
+            )
+
+        elif str(away.get("id")) == str(possession_id):
+
+            game_data["possession"] = (
+                game_data["away_team"]
+            )
+
+    possession_text = situation.get(
+        "possessionText"
+    )
+
+    down = situation.get(
+        "down"
+    )
+
+    distance = situation.get(
+        "distance"
+    )
+
+    if (
+        down is not None
+        and distance is not None
+    ):
+
+        game_data[
+            "down_and_distance"
+        ] = (
+            f"{down} & {distance}"
+        )
+
+        if possession_text:
+
+            game_data[
+                "down_and_distance"
+            ] += (
+                f" - {possession_text}"
+            )
+
+    return game_data
+
+
+# ---------------------------------------------------------
+# NFL
+# ---------------------------------------------------------
+
+def set_nfl_dict():
+
+    nfl_dict.clear()
+
+    data = get_league_data(
+        "football",
+        "nfl"
+    )
+
+    games = data.get(
+        "events",
+        []
+    )
+
     for game in games:
-        game_dict = {}
-        # Team Section
-        teams = game["competitions"][0]["competitors"]
-        home_raw = teams[0]
-        away_raw = teams[1]
-        home_team_name = home_raw["team"]["abbreviation"]
-        away_team_name = away_raw["team"]["abbreviation"]
-        game_name = f"{home_team_name} vs {away_team_name}"
-        home_team_color = home_raw["team"]["color"]
-        away_team_color = away_raw["team"]["color"]
-        game_dict["home_color"] = home_team_color
-        game_dict["away_color"] = away_team_color
-        home_score = home_raw["score"]
-        away_score = away_raw["score"]
-        game_dict["home_score"] = home_score
-        game_dict["away_score"] = away_score
-        home_records = home_raw.get("records", [])
-        away_records = away_raw.get("records", [])
-        home_record = home_records[0]["summary"] if home_records else None
-        away_record = away_records[0]["summary"] if away_records else None
-        game_dict["home_record"] = home_record
-        game_dict["away_record"] = away_record
 
-        # Status Section
-        comp = game["competitions"][0]
-        status = comp.get("status")
-        time_left = status["type"]["detail"]
-        game_dict["status"] = time_left
+        game_data = build_basic_game(
+            game
+        )
 
-        # Misc Section
-        time = game["date"]
-        dt_utc = datetime.fromisoformat(time.replace("Z", "+00:00"))
-        dt_est = dt_utc.astimezone(ZoneInfo("America/New_York"))
-        tipoff_time = dt_est.strftime("%Y-%m-%d %I:%M %p")
-        game_dict["game_time"] = tipoff_time
+        game_data = add_football_information(
+            game,
+            game_data
+        )
+
+        game_name = (
+            f"{game_data['away_team']} "
+            f"at "
+            f"{game_data['home_team']}"
+        )
+
+        nfl_dict[
+            game_name
+        ] = game_data
+
+    return nfl_dict
 
 
-        mlb_dict[game_name] = game_dict
-
-def set_ncaaf_teams_dict():
-    ncaaf_data = get_league_data("football", "college-football")
-    games = ncaaf_data["events"]
-    for game in games:
-        home_team_raw = game["competitions"][0]["competitors"][0]
-        home_team_id = home_team_raw["id"]
-        home_conf, home_color = get_ncaaf_team_data(home_team_id)
-        home_dict = {}
-        home_dict["conf"] = home_conf
-        home_dict["color"] = home_color
-        ncaaf_teams_dict[home_team_id] = home_dict
-
-        away_team_raw = game["competitions"][0]["competitors"][1]
-        away_team_id = away_team_raw["id"]
-        away_conf, away_color = get_ncaaf_team_data(away_team_id)
-        away_dict = {}
-        away_dict["conf"] = away_conf
-        away_dict["color"] = away_color
-        ncaaf_teams_dict[away_team_id] = away_dict
-
-def get_ncaaf_team_data(team_id):
-    r = requests.get(f"https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams/{team_id}")
-    team_data = r.json()
-    team_obj = team_data.get("team", {})
-
-    # Conference
-    conf = None
-    conf_standing = team_obj.get("standingSummary")
-    if isinstance(conf_standing, str) and " in " in conf_standing:
-        conf = conf_standing.split(" in ", 1)[1]
-    else:
-        conf = "Independent"
-
-    # Color
-    color = team_obj.get("color") or None
-
-    return conf, color
+# ---------------------------------------------------------
+# COLLEGE FOOTBALL
+# ---------------------------------------------------------
 
 def set_ncaaf_dict():
+
     ncaaf_dict.clear()
-    ncaaf_teams_dict = {}
-    ncaaf_data = get_league_data("football", "college-football")
-    games = ncaaf_data["events"]
+
+    data = get_league_data(
+        "football",
+        "college-football"
+    )
+
+    games = data.get(
+        "events",
+        []
+    )
+
     for game in games:
-        game_dict = {}
-        # Team Section
-        home_team_raw = game["competitions"][0]["competitors"][0]
-        home_team_id = home_team_raw["id"]
-        game_dict["home_id"] = home_team_id
-        home_team_name = home_team_raw["team"]["abbreviation"]
-        home_score = game["competitions"][0]["competitors"][0]["score"]
-        game_dict["home_score"] = home_score
 
-        away_team_raw = game["competitions"][0]["competitors"][1]
-        away_team_id = away_team_raw["id"]
-        game_dict["away_id"] = away_team_id
-        away_team_name = away_team_raw["team"]["abbreviation"]
-        away_score = game["competitions"][0]["competitors"][1]["score"]
-        game_dict["away_score"] = away_score
+        game_data = build_basic_game(
+            game
+        )
 
-        ncaaf_teams_dict[home_team_id] = home_team_name
-        ncaaf_teams_dict[away_team_id] = away_team_name
-        comp = game["competitions"][0]
-        game_name = f"{home_team_name} vs {away_team_name}"
+        game_data = add_football_information(
+            game,
+            game_data
+        )
 
-        home_team_record = game["competitions"][0]["competitors"][0]["records"][0]["summary"]
-        away_team_record = game["competitions"][0]["competitors"][1]["records"][0]["summary"]
-        game_dict["home_record"] = home_team_record
-        game_dict["away_record"] = away_team_record
+        game_name = (
+            f"{game_data['away_team']} "
+            f"at "
+            f"{game_data['home_team']}"
+        )
 
-        # Situation Section
-        situation = comp.get("situation")
-        possession = situation.get("possession") if situation else None
-        if possession != None:
-            possession_team = ncaaf_teams_dict[possession]
-        else:
-            possession_team = "N/A"
-        game_dict["possession"] = possession_team
-        down = situation.get("down") if situation else None 
-        distance = situation.get("distance") if situation else None
-        yard_line = situation.get("possessionText") if situation else None
-        down_and_dist = f"{down} & {distance} - {yard_line}"
-        game_dict["down_and_dist"] = down_and_dist
+        ncaaf_dict[
+            game_name
+        ] = game_data
 
-        # Status Section
-        status = comp.get("status")
-        time_left = status["type"]["detail"]
-        game_dict["status"] = time_left
-
-        # Misc Section
-        time = game["date"]
-        dt_utc = datetime.fromisoformat(time.replace("Z", "+00:00"))
-        dt_est = dt_utc.astimezone(ZoneInfo("America/New_York"))
-        kickoff_time = dt_est.strftime("%Y-%m-%d %I:%M %p")
-        game_dict["game_time"] = kickoff_time
-
-        ncaaf_dict[game_name] = game_dict
-
-# One time calls to set each team's id and color value for ticker
-
-# set_ncaaf_teams_dict()
-set_nba_teams_dict()
-
-# Repetitive calls to update score/time/other game info
-
-# set_nba_dict()
-# set_nfl_dict()
-# set_mlb_dict()
-# set_ncaaf_dict()
-
-#Print Statements to check output
-
-# print(ncaaf_teams_dict)
-print(nba_teams_dict)
-
-# print(nba_dict)
-# print(nfl_dict)
-print(mlb_dict)
-# print(ncaaf_dict)
+    return ncaaf_dict
 
 
-# Example loop for indexing the ncaaf_teams_dict by the id of each team in the ncaaf_dict
-# for game_name, game in ncaaf_dict.items():
-#     home_id = game["home_id"]
-#     away_id = game["away_id"]
+# ---------------------------------------------------------
+# NBA
+# ---------------------------------------------------------
 
-#     home_info = ncaaf_teams_dict.get(home_id, {})
-#     away_info = ncaaf_teams_dict.get(away_id, {})
+def set_nba_dict():
 
-#     print(
-#         f"{game_name} | "
-#         f"HOME {home_id} - {home_info.get('conf')} - {home_info.get('color')} | "
-#         f"AWAY {away_id} - {away_info.get('conf')} - {away_info.get('color')}"
-#     )
+    nba_dict.clear()
+
+    data = get_league_data(
+        "basketball",
+        "nba"
+    )
+
+    games = data.get(
+        "events",
+        []
+    )
+
+    for game in games:
+
+        game_data = build_basic_game(
+            game
+        )
+
+        game_name = (
+            f"{game_data['away_team']} "
+            f"at "
+            f"{game_data['home_team']}"
+        )
+
+        nba_dict[
+            game_name
+        ] = game_data
+
+    return nba_dict
 
 
-#                                                  FEATURES TO ADD
+# ---------------------------------------------------------
+# MLB
+# ---------------------------------------------------------
 
-# 
-# Add a dict for NFL and NBA teams so that it grabs their color and conference/division similar to NCAAF
-#
-# Add colors for MLB, NBA
+def set_mlb_dict():
+
+    mlb_dict.clear()
+
+    data = get_league_data(
+        "baseball",
+        "mlb"
+    )
+
+    games = data.get(
+        "events",
+        []
+    )
+
+    for game in games:
+
+        game_data = build_basic_game(
+            game
+        )
+
+        game_name = (
+            f"{game_data['away_team']} "
+            f"at "
+            f"{game_data['home_team']}"
+        )
+
+        mlb_dict[
+            game_name
+        ] = game_data
+
+    return mlb_dict
+
+
+# ---------------------------------------------------------
+# GENERIC SPORTS FUNCTION
+# ---------------------------------------------------------
+
+SPORT_FUNCTIONS = {
+
+    "nfl": set_nfl_dict,
+
+    "ncaaf": set_ncaaf_dict,
+
+    "nba": set_nba_dict,
+
+    "mlb": set_mlb_dict,
+}
+
+
+def get_sport_games(
+    sport
+):
+
+    function = SPORT_FUNCTIONS.get(
+        sport
+    )
+
+    if function is None:
+
+        raise ValueError(
+            f"Unknown sport: {sport}"
+        )
+
+    return function()
+
+
+# ---------------------------------------------------------
+# LOCAL TESTING
+# ---------------------------------------------------------
+
+if __name__ == "__main__":
+
+    for sport in SPORT_FUNCTIONS:
+
+        print(
+            f"\n--- {sport.upper()} ---"
+        )
+
+        try:
+
+            games = get_sport_games(
+                sport
+            )
+
+            for game_name, game in games.items():
+
+                print(
+                    game_name,
+                    game
+                )
+
+        except Exception as exc:
+
+            print(
+                f"Error loading {sport}: {exc}"
+            )

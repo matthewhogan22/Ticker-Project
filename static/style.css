@@ -1,0 +1,397 @@
+* {
+    box-sizing: border-box;
+}
+
+
+body {
+
+    margin: 0;
+
+    min-height: 100vh;
+
+    background:
+        #0b0f14;
+
+    color:
+        #f5f7fa;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+}
+
+
+.page {
+
+    min-height: 100vh;
+
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: center;
+
+    padding:
+        40px 20px;
+}
+
+
+.card {
+
+    width: 100%;
+
+    max-width: 600px;
+
+    background:
+        #151b23;
+
+    border:
+        1px solid #28313d;
+
+    border-radius:
+        16px;
+
+    padding:
+        28px;
+
+    box-shadow:
+        0 15px 40px
+        rgba(0, 0, 0, 0.35);
+}
+
+
+.heading {
+
+    display: flex;
+
+    gap: 14px;
+
+    align-items: center;
+
+    margin-bottom:
+        30px;
+}
+
+
+.heading h1 {
+
+    margin:
+        0 0 5px;
+
+    font-size:
+        28px;
+}
+
+
+.heading p {
+
+    margin: 0;
+
+    color:
+        #8f9baa;
+}
+
+
+.status-light {
+
+    width:
+        13px;
+
+    height:
+        13px;
+
+    border-radius:
+        50%;
+
+    background:
+        #27d17f;
+
+    box-shadow:
+        0 0 12px
+        rgba(
+            39,
+            209,
+            127,
+            0.7
+        );
+}
+
+
+h2 {
+
+    margin:
+        0 0 6px;
+
+    font-size:
+        18px;
+}
+
+
+.description {
+
+    margin:
+        0 0 18px;
+
+    color:
+        #8f9baa;
+
+    font-size:
+        14px;
+}
+
+
+.sports-list {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        10px;
+}
+
+
+.sport {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    padding:
+        16px;
+
+    background:
+        #1c2430;
+
+    border:
+        1px solid #2d3846;
+
+    border-radius:
+        10px;
+
+    cursor:
+        pointer;
+
+    transition:
+        0.15s ease;
+}
+
+
+.sport:hover {
+
+    border-color:
+        #4f6073;
+
+    transform:
+        translateY(-1px);
+}
+
+
+.sport div {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        4px;
+}
+
+
+.sport span {
+
+    color:
+        #8f9baa;
+
+    font-size:
+        13px;
+}
+
+
+.sport input {
+
+    width:
+        22px;
+
+    height:
+        22px;
+
+    cursor:
+        pointer;
+
+    accent-color:
+        #27d17f;
+}
+
+
+.display-heading {
+
+    margin-top:
+        32px;
+}
+
+
+.field {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    margin-top:
+        16px;
+
+    padding:
+        16px;
+
+    background:
+        #1c2430;
+
+    border:
+        1px solid #2d3846;
+
+    border-radius:
+        10px;
+}
+
+
+.field input {
+
+    width:
+        80px;
+
+    padding:
+        8px;
+
+    border:
+        1px solid #435064;
+
+    border-radius:
+        6px;
+
+    background:
+        #10161e;
+
+    color:
+        white;
+
+    font-size:
+        16px;
+}
+
+
+button {
+
+    width:
+        100%;
+
+    margin-top:
+        28px;
+
+    padding:
+        14px 20px;
+
+    border:
+        none;
+
+    border-radius:
+        10px;
+
+    background:
+        #27d17f;
+
+    color:
+        #08120d;
+
+    font-size:
+        16px;
+
+    font-weight:
+        bold;
+
+    cursor:
+        pointer;
+
+    transition:
+        0.15s ease;
+}
+
+
+button:hover {
+
+    filter:
+        brightness(1.08);
+
+    transform:
+        translateY(-1px);
+}
+
+
+.success {
+
+    padding:
+        12px 14px;
+
+    margin-bottom:
+        24px;
+
+    background:
+        rgba(
+            39,
+            209,
+            127,
+            0.12
+        );
+
+    border:
+        1px solid
+        rgba(
+            39,
+            209,
+            127,
+            0.35
+        );
+
+    color:
+        #68e6a8;
+
+    border-radius:
+        8px;
+}
+
+
+@media (
+    max-width: 600px
+) {
+
+    .page {
+
+        padding:
+            15px;
+    }
+
+
+    .card {
+
+        padding:
+            20px;
+
+        border-radius:
+            12px;
+    }
+
+}
