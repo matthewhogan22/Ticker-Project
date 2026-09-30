@@ -397,7 +397,7 @@ class ScoreboardDisplay:
         x,
         y,
         rgb,
-        size=2
+        size=3
     ):
 
         r, g, b = rgb
@@ -413,6 +413,40 @@ class ScoreboardDisplay:
                     g,
                     b
                 )
+
+    def draw_filled_circle(
+        self,
+        cx,
+        cy,
+        rgb,
+        radius=1
+    ):
+
+        r, g, b = rgb
+
+        for dx in range(
+            -radius,
+            radius + 1
+        ):
+
+            for dy in range(
+                -radius,
+                radius + 1
+            ):
+
+                if (
+                    dx * dx
+                    + dy * dy
+                    <= radius * radius
+                ):
+
+                    self.canvas.SetPixel(
+                        cx + dx,
+                        cy + dy,
+                        r,
+                        g,
+                        b
+                    )
 
     def draw_base_diamond(
         self,
@@ -433,6 +467,8 @@ class ScoreboardDisplay:
             0
         )
 
+        # 3x3 base markers with more room on the right side.
+
         # Second base
         second_color = (
             occupied
@@ -442,9 +478,9 @@ class ScoreboardDisplay:
 
         self.draw_pixel_block(
             53,
-            15,
+            13,
             second_color,
-            size=2
+            size=3
         )
 
         # Third base
@@ -455,10 +491,10 @@ class ScoreboardDisplay:
         )
 
         self.draw_pixel_block(
-            48,
-            20,
+            47,
+            19,
             third_color,
-            size=2
+            size=3
         )
 
         # First base
@@ -469,10 +505,62 @@ class ScoreboardDisplay:
         )
 
         self.draw_pixel_block(
-            58,
-            20,
+            59,
+            19,
             first_color,
-            size=2
+            size=3
+        )
+
+    def draw_out_indicators(
+        self,
+        outs
+    ):
+
+        on_color = (
+            255,
+            220,
+            0
+        )
+
+        off_color = (
+            255,
+            255,
+            255
+        )
+
+        # 0 outs:
+        # left white, right white
+        #
+        # 1 out:
+        # left white, right yellow
+        #
+        # 2 outs:
+        # left yellow, right yellow
+
+        left_color = off_color
+        right_color = off_color
+
+        if outs == 1:
+
+            right_color = on_color
+
+        elif outs >= 2:
+
+            left_color = on_color
+            right_color = on_color
+
+        self.draw_filled_circle(
+            50,
+            29,
+            left_color,
+            radius=1
+        )
+
+        self.draw_filled_circle(
+            57,
+            29,
+            right_color,
+            radius=1
         )
 
     def format_inning(
@@ -1320,7 +1408,7 @@ class ScoreboardDisplay:
             )
 
             # -------------------------------------------------
-            # OUTS
+            # BALLS / STRIKES
             # -------------------------------------------------
 
             balls = game.get(
@@ -1333,33 +1421,29 @@ class ScoreboardDisplay:
                 0
             )
 
-            outs = game.get(
-                "outs",
-                0
-            )
-
             count_text = (
                 f"{balls}-{strikes}"
             )
 
-            outs_text = (
-                f"O{outs}"
-            )
-
             self.draw_text(
                 self.small_font,
-                39,
+                37,
                 31,
                 self.gray,
                 count_text
             )
 
-            self.draw_text(
-                self.small_font,
-                52,
-                31,
-                self.gray,
-                outs_text
+            # -------------------------------------------------
+            # OUTS
+            # -------------------------------------------------
+
+            outs = game.get(
+                "outs",
+                0
+            )
+
+            self.draw_out_indicators(
+                outs
             )
 
         # -----------------------------------------------------
