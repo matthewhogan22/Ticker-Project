@@ -1228,70 +1228,152 @@ class ScoreboardDisplay:
                 header
             )
 
-            self.draw_team_line(
-                17,
-                game.get(
-                    "away_team",
-                    ""
-                ),
-                game.get(
-                    "away_score",
-                    ""
-                ),
-                "",
-                away_color
-            )
-
-            self.draw_team_line(
-                29,
-                game.get(
-                    "home_team",
-                    ""
-                ),
-                game.get(
-                    "home_score",
-                    ""
-                ),
-                "",
-                home_color
-            )
-
-            # Small possession indicator.
             possession = game.get(
                 "possession",
                 ""
             )
 
-            if possession:
+            down_and_distance = (
+                game.get(
+                    "down_and_distance",
+                    ""
+                )
+            )
 
-                if (
-                    possession
-                    == game.get(
-                        "away_team"
-                    )
-                ):
+            # -----------------------------------------
+            # AWAY TEAM
+            # -----------------------------------------
+
+            self.draw_text(
+                self.font,
+                1,
+                17,
+                away_color,
+                self.shorten(
+                    game.get(
+                        "away_team",
+                        ""
+                    ),
+                    4
+                )
+            )
+
+            away_score = str(
+                game.get(
+                    "away_score",
+                    ""
+                )
+            )
+
+            away_score_x = (
+                58
+                - (
+                    len(away_score)
+                    * 6
+                )
+            )
+
+            self.draw_text(
+                self.font,
+                away_score_x,
+                17,
+                self.white,
+                away_score
+            )
+
+            # -----------------------------------------
+            # HOME TEAM
+            # -----------------------------------------
+
+            self.draw_text(
+                self.font,
+                1,
+                29,
+                home_color,
+                self.shorten(
+                    game.get(
+                        "home_team",
+                        ""
+                    ),
+                    4
+                )
+            )
+
+            home_score = str(
+                game.get(
+                    "home_score",
+                    ""
+                )
+            )
+
+            home_score_x = (
+                58
+                - (
+                    len(home_score)
+                    * 6
+                )
+            )
+
+            self.draw_text(
+                self.font,
+                home_score_x,
+                29,
+                self.white,
+                home_score
+            )
+
+            # -----------------------------------------
+            # POSSESSION + DOWN/DISTANCE
+            # -----------------------------------------
+
+            if (
+                possession
+                == game.get(
+                    "away_team"
+                )
+            ):
+
+                self.draw_text(
+                    self.small_font,
+                    26,
+                    16,
+                    self.yellow,
+                    ">"
+                )
+
+                if down_and_distance:
 
                     self.draw_text(
                         self.small_font,
-                        27,
+                        31,
                         16,
-                        self.yellow,
-                        ">"
+                        self.gray,
+                        down_and_distance
                     )
 
-                elif (
-                    possession
-                    == game.get(
-                        "home_team"
-                    )
-                ):
+            elif (
+                possession
+                == game.get(
+                    "home_team"
+                )
+            ):
+
+                self.draw_text(
+                    self.small_font,
+                    26,
+                    28,
+                    self.yellow,
+                    ">"
+                )
+
+                if down_and_distance:
 
                     self.draw_text(
                         self.small_font,
-                        27,
+                        31,
                         28,
-                        self.yellow,
-                        ">"
+                        self.gray,
+                        down_and_distance
                     )
 
         # ---------------------------------------------
