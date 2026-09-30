@@ -78,12 +78,12 @@ def hex_to_rgb(
 def find_font(filename):
 
     font_path = (
-        f"/home/matthewhogan/"
-        f"rpi-rgb-led-matrix/fonts/"
+        f"/usr/local/share/"
+        f"sports-ticker/fonts/"
         f"{filename}"
     )
 
-    if not os.path.exists(font_path):
+    if not os.path.isfile(font_path):
 
         raise FileNotFoundError(
             f"Could not find RGB matrix font: {font_path}"
