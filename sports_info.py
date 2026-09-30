@@ -770,21 +770,17 @@ def set_mlb_dict():
 
     for game in games:
 
-        competition = get_competition(
-            game
-        )
-
         game_data = build_basic_game(
             game
         )
+
+        if game_data is None:
+            continue
 
         game_data = add_baseball_information(
             game,
             game_data
         )
-
-        if game_data is None:
-            continue
 
         game_name = (
             f"{game_data['away_team']} "

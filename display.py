@@ -86,19 +86,6 @@ def hex_to_rgb(
         )
 
 
-def color_brightness(
-    rgb
-):
-
-    r, g, b = rgb
-
-    return (
-        (r * 299)
-        + (g * 587)
-        + (b * 114)
-    ) / 1000
-
-
 def lighten_rgb(
     rgb,
     target_brightness=90
@@ -152,57 +139,223 @@ def lighten_rgb(
         200
     )
 
+def color_brightness(
+    rgb
+):
 
-def readable_team_rgb(
+    r, g, b = rgb
+
+    return (
+        (r * 299)
+        + (g * 587)
+        + (b * 114)
+    ) / 1000
+
+
+def color_distance(
+    rgb1,
+    rgb2
+):
+
+    r1, g1, b1 = rgb1
+    r2, g2, b2 = rgb2
+
+    return (
+        (
+            r1 - r2
+        ) ** 2
+        +
+        (
+            g1 - g2
+        ) ** 2
+        +
+        (
+            b1 - b2
+        ) ** 2
+    ) ** 0.5
+
+
+def normalize_team_color(
+    hex_color
+):
+
+    rgb = hex_to_rgb(
+        hex_color
+    )
+
+    return lighten_rgb(
+        rgb,
+        target_brightness=90
+    )
+
+
+def build_team_color_options(
     primary_hex,
     alternate_hex=""
 ):
 
-    primary = hex_to_rgb(
-        primary_hex
-    )
+    options = []
 
-    primary_brightness = (
-        color_brightness(
-            primary
+    # Primary color
+    if primary_hex:
+
+        primary = hex_to_rgb(
+            primary_hex
         )
-    )
 
-    # Use the primary normally if it is bright enough.
-    if primary_brightness >= 90:
-        return primary
+        options.append(
+            {
+                "rgb": normalize_team_color(
+                    primary_hex
+                ),
+                "source": "primary",
+                "original_brightness":
+                    color_brightness(
+                        primary
+                    )
+            }
+        )
 
-    # Primary is dark. Try ESPN's alternate color.
+    # Alternate color
     if alternate_hex:
 
         alternate = hex_to_rgb(
             alternate_hex
         )
 
-        alternate_brightness = (
-            color_brightness(
-                alternate
-            )
+        options.append(
+            {
+                "rgb": normalize_team_color(
+                    alternate_hex
+                ),
+                "source": "alternate",
+                "original_brightness":
+                    color_brightness(
+                        alternate
+                    )
+            }
         )
 
-        if alternate_brightness >= 90:
-            return alternate
+    # Absolute fallback
+    if not options:
 
-        # Neither is bright enough.
-        # Choose whichever one starts brighter.
-        if (
-            alternate_brightness
-            > primary_brightness
-        ):
+        options.append(
+            {
+                "rgb": (
+                    255,
+                    255,
+                    255
+                ),
+                "source": "fallback",
+                "original_brightness": 255
+            }
+        )
 
-            return lighten_rgb(
-                alternate
+    return options
+
+
+def get_matchup_rgb_colors(
+    away_primary,
+    away_alternate,
+    home_primary,
+    home_alternate
+):
+
+    away_options = (
+        build_team_color_options(
+            away_primary,
+            away_alternate
+        )
+    )
+
+    home_options = (
+        build_team_color_options(
+            home_primary,
+            home_alternate
+        )
+    )
+
+    best_pair = None
+    best_score = -1
+
+    for away_option in away_options:
+
+        for home_option in home_options:
+
+            away_rgb = (
+                away_option["rgb"]
             )
 
-    # No useful alternate available.
-    return lighten_rgb(
-        primary
-    )
+            home_rgb = (
+                home_option["rgb"]
+            )
+
+            contrast = color_distance(
+                away_rgb,
+                home_rgb
+            )
+
+            away_brightness = (
+                color_brightness(
+                    away_rgb
+                )
+            )
+
+            home_brightness = (
+                color_brightness(
+                    home_rgb
+                )
+            )
+
+            # Start with color separation.
+            score = contrast
+
+            # Reward colors that are clearly readable.
+            score += min(
+                away_brightness,
+                140
+            ) * 0.20
+
+            score += min(
+                home_brightness,
+                140
+            ) * 0.20
+
+            # Slight preference for primary colors.
+            if (
+                away_option["source"]
+                == "primary"
+            ):
+
+                score += 12
+
+            if (
+                home_option["source"]
+                == "primary"
+            ):
+
+                score += 12
+
+            # Penalize very similar colors.
+            if contrast < 70:
+
+                score -= 100
+
+            # Stronger penalty if they are extremely similar.
+            if contrast < 40:
+
+                score -= 200
+
+            if score > best_score:
+
+                best_score = score
+
+                best_pair = (
+                    away_rgb,
+                    home_rgb
+                )
+
+    return best_pair
 
 # ---------------------------------------------------------
 # GAME TIME FORMATTING
@@ -474,6 +627,49 @@ class ScoreboardDisplay:
     # BASIC HELPERS
     # -----------------------------------------------------
 
+    def get_matchup_colors(
+        self,
+        game
+    ):
+
+        away_rgb, home_rgb = (
+            get_matchup_rgb_colors(
+
+                game.get(
+                    "away_color",
+                    ""
+                ),
+
+                game.get(
+                    "away_alternate_color",
+                    ""
+                ),
+
+                game.get(
+                    "home_color",
+                    ""
+                ),
+
+                game.get(
+                    "home_alternate_color",
+                    ""
+                )
+            )
+        )
+
+        away_color = graphics.Color(
+            *away_rgb
+        )
+
+        home_color = graphics.Color(
+            *home_rgb
+        )
+
+        return (
+            away_color,
+            home_color
+        )
+
     def draw_pixel_block(
         self,
         x,
@@ -684,21 +880,6 @@ class ScoreboardDisplay:
 
         return str(
             inning
-        )
-
-    def get_color(
-        self,
-        primary_color,
-        alternate_color=""
-    ):
-
-        rgb = readable_team_rgb(
-            primary_color,
-            alternate_color
-        )
-
-        return graphics.Color(
-            *rgb
         )
 
 
@@ -975,23 +1156,9 @@ class ScoreboardDisplay:
             ""
         )
 
-        away_color = self.get_color(
-            game.get(
-                "away_color"
-            ),
-            game.get(
-                "away_alternate_color",
-                ""
-            )
-        )
-
-        home_color = self.get_color(
-            game.get(
-                "home_color"
-            ),
-            game.get(
-                "home_alternate_color",
-                ""
+        away_color, home_color = (
+            self.get_matchup_colors(
+                game
             )
         )
 
@@ -1188,15 +1355,9 @@ class ScoreboardDisplay:
             ""
         )
 
-        away_color = self.get_color(
-            game.get(
-                "away_color"
-            )
-        )
-
-        home_color = self.get_color(
-            game.get(
-                "home_color"
+        away_color, home_color = (
+            self.get_matchup_colors(
+                game
             )
         )
 
@@ -1348,15 +1509,9 @@ class ScoreboardDisplay:
             ""
         )
 
-        away_color = self.get_color(
-            game.get(
-                "away_color"
-            )
-        )
-
-        home_color = self.get_color(
-            game.get(
-                "home_color"
+        away_color, home_color = (
+            self.get_matchup_colors(
+                game
             )
         )
 
@@ -1605,15 +1760,9 @@ class ScoreboardDisplay:
             )
         )
 
-        away_color = self.get_color(
-            game.get(
-                "away_color"
-            )
-        )
-
-        home_color = self.get_color(
-            game.get(
-                "home_color"
+        away_color, home_color = (
+            self.get_matchup_colors(
+                game
             )
         )
 
