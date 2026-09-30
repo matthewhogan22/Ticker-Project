@@ -392,6 +392,130 @@ class ScoreboardDisplay:
     # BASIC HELPERS
     # -----------------------------------------------------
 
+    def draw_pixel_block(
+        self,
+        x,
+        y,
+        rgb,
+        size=2
+    ):
+
+        r, g, b = rgb
+
+        for dx in range(size):
+
+            for dy in range(size):
+
+                self.canvas.SetPixel(
+                    x + dx,
+                    y + dy,
+                    r,
+                    g,
+                    b
+                )
+
+    def draw_base_diamond(
+        self,
+        on_first,
+        on_second,
+        on_third
+    ):
+
+        empty = (
+            70,
+            70,
+            70
+        )
+
+        occupied = (
+            255,
+            220,
+            0
+        )
+
+        # Second base
+        second_color = (
+            occupied
+            if on_second
+            else empty
+        )
+
+        self.draw_pixel_block(
+            53,
+            15,
+            second_color,
+            size=2
+        )
+
+        # Third base
+        third_color = (
+            occupied
+            if on_third
+            else empty
+        )
+
+        self.draw_pixel_block(
+            48,
+            20,
+            third_color,
+            size=2
+        )
+
+        # First base
+        first_color = (
+            occupied
+            if on_first
+            else empty
+        )
+
+        self.draw_pixel_block(
+            58,
+            20,
+            first_color,
+            size=2
+        )
+
+    def format_inning(
+        self,
+        game
+    ):
+
+        inning = game.get(
+            "inning",
+            0
+        )
+
+        inning_half = game.get(
+            "inning_half",
+            ""
+        )
+
+        if not inning:
+
+            return self.shorten(
+                game.get(
+                    "short_status",
+                    ""
+                ),
+                8
+            )
+
+        if inning_half == "top":
+
+            return (
+                f"^ {inning}"
+            )
+
+        if inning_half == "bottom":
+
+            return (
+                f"v {inning}"
+            )
+
+        return str(
+            inning
+        )
+
     def get_color(
         self,
         hex_color
@@ -1058,9 +1182,9 @@ class ScoreboardDisplay:
 
         self.canvas.Clear()
 
-        # ---------------------------------------------
+        # -----------------------------------------------------
         # UPCOMING MLB
-        # ---------------------------------------------
+        # -----------------------------------------------------
 
         if state == "pre":
 
@@ -1101,60 +1225,146 @@ class ScoreboardDisplay:
                 show_score=False
             )
 
-        # ---------------------------------------------
+        # -----------------------------------------------------
         # LIVE MLB
-        # ---------------------------------------------
+        # -----------------------------------------------------
 
         elif state == "in":
 
-            # ESPN commonly returns statuses such as:
-            #
-            # Top 7th
-            # Bottom 3rd
-            # Mid 5th
-            #
-            # shortDetail is typically compact enough
-            # for the 64px header.
+            inning_text = self.format_inning(
+                game
+            )
 
+            # Header
             self.draw_header(
                 "MLB",
-                game.get(
-                    "short_status",
-                    ""
+                inning_text
+            )
+
+            # Away team
+            self.draw_text(
+                self.font,
+                1,
+                17,
+                away_color,
+                self.shorten(
+                    game.get(
+                        "away_team",
+                        ""
+                    ),
+                    4
                 )
             )
 
-            self.draw_team_line(
-                17,
-                game.get(
-                    "away_team",
-                    ""
-                ),
-                game.get(
-                    "away_score",
-                    ""
-                ),
-                "",
-                away_color
-            )
-
-            self.draw_team_line(
+            self.draw_text(
+                self.font,
                 29,
-                game.get(
-                    "home_team",
-                    ""
-                ),
-                game.get(
-                    "home_score",
-                    ""
-                ),
-                "",
-                home_color
+                17,
+                self.white,
+                str(
+                    game.get(
+                        "away_score",
+                        ""
+                    )
+                )
             )
 
-        # ---------------------------------------------
+            # Home team
+            self.draw_text(
+                self.font,
+                1,
+                29,
+                home_color,
+                self.shorten(
+                    game.get(
+                        "home_team",
+                        ""
+                    ),
+                    4
+                )
+            )
+
+            self.draw_text(
+                self.font,
+                29,
+                29,
+                self.white,
+                str(
+                    game.get(
+                        "home_score",
+                        ""
+                    )
+                )
+            )
+
+            # -------------------------------------------------
+            # BASE RUNNERS
+            # -------------------------------------------------
+
+            self.draw_base_diamond(
+
+                game.get(
+                    "on_first",
+                    False
+                ),
+
+                game.get(
+                    "on_second",
+                    False
+                ),
+
+                game.get(
+                    "on_third",
+                    False
+                )
+            )
+
+            # -------------------------------------------------
+            # OUTS
+            # -------------------------------------------------
+
+            balls = game.get(
+                "balls",
+                0
+            )
+
+            strikes = game.get(
+                "strikes",
+                0
+            )
+
+            outs = game.get(
+                "outs",
+                0
+            )
+
+            count_text = (
+                f"{balls}-{strikes}"
+            )
+
+            outs_text = (
+                f"O{outs}"
+            )
+
+            self.draw_text(
+                self.small_font,
+                39,
+                31,
+                self.gray,
+                count_text
+            )
+
+            self.draw_text(
+                self.small_font,
+                52,
+                31,
+                self.gray,
+                outs_text
+            )
+
+        # -----------------------------------------------------
         # FINAL MLB
-        # ---------------------------------------------
+        # -----------------------------------------------------
 
         else:
 

@@ -259,6 +259,137 @@ def get_score(team):
         score
     )
 
+def add_baseball_information(
+    game,
+    game_data
+):
+
+    competition = get_competition(
+        game
+    )
+
+    situation = competition.get(
+        "situation",
+        {}
+    ) or {}
+
+    status = competition.get(
+        "status",
+        {}
+    )
+
+    # -----------------------------------------------------
+    # OUTS
+    # -----------------------------------------------------
+
+    game_data["outs"] = situation.get(
+        "outs",
+        0
+    )
+
+    # -----------------------------------------------------
+    # BASE RUNNERS
+    # -----------------------------------------------------
+
+    game_data["on_first"] = bool(
+        situation.get(
+            "onFirst",
+            False
+        )
+    )
+
+    game_data["on_second"] = bool(
+        situation.get(
+            "onSecond",
+            False
+        )
+    )
+
+    game_data["on_third"] = bool(
+        situation.get(
+            "onThird",
+            False
+        )
+    )
+
+    # -----------------------------------------------------
+    # BALLS / STRIKES
+    # -----------------------------------------------------
+
+    game_data["balls"] = situation.get(
+        "balls",
+        0
+    )
+
+    game_data["strikes"] = situation.get(
+        "strikes",
+        0
+    )
+
+    # -----------------------------------------------------
+    # INNING
+    # -----------------------------------------------------
+
+    period = status.get(
+        "period"
+    )
+
+    if period is None:
+
+        period = competition.get(
+            "status",
+            {}
+        ).get(
+            "period",
+            0
+        )
+
+    game_data["inning"] = period or 0
+
+    # ESPN short status usually contains things like:
+    #
+    # Top 7th
+    # Bot 4th
+    # Mid 6th
+    #
+    # We'll use it to determine the inning half.
+
+    short_status = (
+        game_data
+        .get(
+            "short_status",
+            ""
+        )
+        .lower()
+    )
+
+    if (
+        "top" in short_status
+        or "mid" in short_status
+    ):
+
+        game_data[
+            "inning_half"
+        ] = "top"
+
+    elif (
+        "bot" in short_status
+        or "bottom" in short_status
+        or "end" in short_status
+    ):
+
+        game_data[
+            "inning_half"
+        ] = "bottom"
+
+    else:
+
+        game_data[
+            "inning_half"
+        ] = ""
+
+    return game_data
+
 
 # ---------------------------------------------------------
 # BASIC GAME OBJECT
@@ -611,8 +742,17 @@ def set_mlb_dict():
 
     for game in games:
 
+        competition = get_competition(
+            game
+        )
+
         game_data = build_basic_game(
             game
+        )
+
+        game_data = add_baseball_information(
+            game,
+            game_data
         )
 
         if game_data is None:
