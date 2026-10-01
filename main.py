@@ -2,10 +2,17 @@ import time
 
 from display import ScoreboardDisplay
 
-from settings import load_settings
+from settings import (
+    get_active_bets,
+    load_settings,
+)
 
 from sports_info import (
-    get_sport_games
+    get_sport_games,
+)
+
+from bet_tracker import (
+    get_bet_progress,
 )
 
 
@@ -16,7 +23,16 @@ SPORT_ORDER = [
     "mlb",
 ]
 
-def should_show_game(game, game_filter):
+
+# ---------------------------------------------------------
+# GAME FILTERING
+# ---------------------------------------------------------
+
+
+def should_show_game(
+    game,
+    game_filter
+):
 
     state = game.get(
         "state",
@@ -36,6 +52,12 @@ def should_show_game(game, game_filter):
         )
 
     return True
+
+
+# ---------------------------------------------------------
+# FAVORITES
+# ---------------------------------------------------------
+
 
 def is_favorite_game(
     game,
@@ -77,14 +99,20 @@ def apply_team_preferences(
         games.items()
     )
 
-    if favorite_mode == "favorites_only":
+    if (
+        favorite_mode
+        == "favorites_only"
+    ):
 
         return [
             (
                 game_name,
                 game
             )
-            for game_name, game
+            for (
+                game_name,
+                game
+            )
             in game_items
             if is_favorite_game(
                 game,
@@ -92,12 +120,18 @@ def apply_team_preferences(
             )
         ]
 
-    if favorite_mode == "prioritize":
+    if (
+        favorite_mode
+        == "prioritize"
+    ):
 
         favorite_games = []
         other_games = []
 
-        for game_name, game in game_items:
+        for (
+            game_name,
+            game
+        ) in game_items:
 
             item = (
                 game_name,
@@ -127,15 +161,22 @@ def apply_team_preferences(
     return game_items
 
 
+# ---------------------------------------------------------
+# ENABLED SPORTS
+# ---------------------------------------------------------
+
+
 def get_enabled_sports(
     settings
 ):
 
     enabled = []
 
-    sports_settings = settings.get(
-        "sports",
-        {}
+    sports_settings = (
+        settings.get(
+            "sports",
+            {}
+        )
     )
 
     for sport in SPORT_ORDER:
@@ -152,6 +193,145 @@ def get_enabled_sports(
     return enabled
 
 
+# ---------------------------------------------------------
+# BET HELPERS
+# ---------------------------------------------------------
+
+
+def normalize_name(
+    value
+):
+
+    return (
+        str(
+            value or ""
+        )
+        .strip()
+        .lower()
+        .replace(
+            ".",
+            ""
+        )
+        .replace(
+            "-",
+            " "
+        )
+    )
+
+def bet_matches_game(
+    bet,
+    sport,
+    game
+):
+
+    bet_league = (
+        str(
+            bet.get(
+                "league",
+                ""
+            )
+        )
+        .strip()
+        .lower()
+    )
+
+    if bet_league != sport.lower():
+        return False
+
+    bet_away = (
+        str(
+            bet.get(
+                "away_team",
+                ""
+            )
+        )
+        .strip()
+        .upper()
+    )
+
+    bet_home = (
+        str(
+            bet.get(
+                "home_team",
+                ""
+            )
+        )
+        .strip()
+        .upper()
+    )
+
+    game_away = (
+        str(
+            game.get(
+                "away_team",
+                ""
+            )
+        )
+        .strip()
+        .upper()
+    )
+
+    game_home = (
+        str(
+            game.get(
+                "home_team",
+                ""
+            )
+        )
+        .strip()
+        .upper()
+    )
+
+    return (
+        bet_away == game_away
+        and bet_home == game_home
+    )
+
+
+def get_bets_for_game(
+    sport,
+    game
+):
+
+    bets = get_active_bets()
+
+    return [
+        bet
+        for bet in bets
+        if bet_matches_game(
+            bet,
+            sport,
+            game
+        )
+    ]
+
+
+def should_show_bet(
+    bet,
+    progress
+):
+    """
+    Do not show API errors as ticker screens.
+
+    Pending bets are allowed because it can be useful
+    to see the line before the game starts.
+    """
+
+    state = progress.get(
+        "state",
+        ""
+    )
+
+    return state not in {
+        "error",
+    }
+
+
+# ---------------------------------------------------------
+# MAIN LOOP
+# ---------------------------------------------------------
+
+
 def main():
 
     print(
@@ -165,9 +345,6 @@ def main():
     while True:
 
         # Reload settings every cycle.
-        # This means changes from the website
-        # automatically take effect.
-
         settings = load_settings()
 
         enabled_sports = (
@@ -252,27 +429,36 @@ def main():
                 )
             )
 
-            favorite_mode = sport_favorites.get(
-                "mode",
-                "all"
+            favorite_mode = (
+                sport_favorites.get(
+                    "mode",
+                    "all"
+                )
             )
 
-            favorite_teams = sport_favorites.get(
-                "teams",
-                []
+            favorite_teams = (
+                sport_favorites.get(
+                    "teams",
+                    []
+                )
             )
 
-            ordered_games = apply_team_preferences(
-                games,
-                favorite_teams,
-                favorite_mode
+            ordered_games = (
+                apply_team_preferences(
+                    games,
+                    favorite_teams,
+                    favorite_mode
+                )
             )
 
-            # Reload settings here as well so
-            # changes don't require finishing
-            # the entire ticker rotation.
+            # -----------------------------------------
+            # GAME ROTATION
+            # -----------------------------------------
 
-            for game_name, game in ordered_games:
+            for (
+                game_name,
+                game
+            ) in ordered_games:
 
                 latest_settings = (
                     load_settings()
@@ -290,8 +476,6 @@ def main():
                     )
                 )
 
-                # User may have disabled this sport
-                # while it was currently cycling.
                 if not sport_enabled:
                     break
 
@@ -307,12 +491,6 @@ def main():
                     )
                 )
 
-                if not should_show_game(
-                    game,
-                    game_filter
-                ):
-                    continue
-
                 seconds_per_game = (
                     latest_settings
                     .get(
@@ -325,15 +503,91 @@ def main():
                     )
                 )
 
-                print(
-                    f"Showing: {game_name}"
+                # -------------------------------------
+                # FIND TRACKED BETS FIRST
+                # -------------------------------------
+
+                game_bets = (
+                    get_bets_for_game(
+                        sport,
+                        game
+                    )
                 )
 
-                display.show_game(
-                    sport,
-                    game,
-                    seconds=seconds_per_game
+                show_normal_game = (
+                    should_show_game(
+                        game,
+                        game_filter
+                    )
                 )
+
+                # If the normal game is filtered out
+                # AND there are no tracked bets for it,
+                # there is nothing to display.
+                if (
+                    not show_normal_game
+                    and not game_bets
+                ):
+                    continue
+
+                # -------------------------------------
+                # NORMAL GAME SCREEN
+                # -------------------------------------
+
+                if show_normal_game:
+
+                    print(
+                        f"Showing: {game_name}"
+                    )
+
+                    display.show_game(
+                        sport,
+                        game,
+                        seconds=seconds_per_game
+                    )
+
+                # -------------------------------------
+                # TRACKED BETS FOR THIS GAME
+                # -------------------------------------
+
+                for bet in game_bets:
+
+                    try:
+
+                        progress = (
+                            get_bet_progress(
+                                bet
+                            )
+                        )
+
+                    except Exception as exc:
+
+                        print(
+                            "Error getting bet "
+                            f"progress: {exc}"
+                        )
+
+                        continue
+
+                    if not should_show_bet(
+                        bet,
+                        progress
+                    ):
+                        continue
+
+                    print(
+                        "Showing bet: "
+                        f"{bet.get('selection', '')} "
+                        f"{bet.get('line', '')} "
+                        f"| "
+                        f"{progress.get('message', '')}"
+                    )
+
+                    display.show_bet(
+                        bet,
+                        progress,
+                        seconds=seconds_per_game
+                    )
 
         # Tiny pause before rebuilding scoreboard data.
         time.sleep(

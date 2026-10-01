@@ -1083,6 +1083,12 @@
             league:
                 selectedEvent.league,
 
+            away_team:
+                selectedEvent.away_short,
+
+            home_team:
+                selectedEvent.home_short,
+
             odd_id:
                 selectedMarket.odd_id,
 

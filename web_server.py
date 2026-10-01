@@ -513,6 +513,26 @@ def api_add_bet():
                 ]
             ).strip(),
 
+        "away_team":
+            str(
+                payload.get(
+                    "away_team",
+                    ""
+                )
+            )
+            .strip()
+            .upper(),
+
+        "home_team":
+            str(
+                payload.get(
+                    "home_team",
+                    ""
+                )
+            )
+            .strip()
+            .upper(),
+
         "bet_type":
             bet_type,
 

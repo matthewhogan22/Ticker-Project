@@ -1972,6 +1972,703 @@ class ScoreboardDisplay:
             seconds
         )
 
+    # -----------------------------------------------------
+    # TRACKED BET SCREEN
+    # -----------------------------------------------------
+
+    def show_bet(
+        self,
+        bet,
+        progress,
+        seconds=8
+    ):
+
+        # -------------------------------------------------
+        # CONSOLE MODE
+        # -------------------------------------------------
+
+        if self.console_mode:
+
+            print(
+                "\n[MY BET] "
+                f"{bet.get('league', '')} | "
+                f"{bet.get('selection', '')} | "
+                f"{bet.get('side', '')} "
+                f"{bet.get('line', '')} | "
+                f"{progress.get('message', '')}"
+            )
+
+            time.sleep(
+                min(
+                    seconds,
+                    2
+                )
+            )
+
+            return
+
+        # -------------------------------------------------
+        # PREPARE VALUES
+        # -------------------------------------------------
+
+        league = str(
+            bet.get(
+                "league",
+                ""
+            )
+        ).upper()
+
+        bet_type = str(
+            bet.get(
+                "bet_type",
+                ""
+            )
+        )
+
+        selection = str(
+            bet.get(
+                "selection",
+                ""
+            )
+        )
+
+        side = str(
+            bet.get(
+                "side",
+                ""
+            )
+        ).upper()
+
+        line = bet.get(
+            "line"
+        )
+
+        stat_name = str(
+            bet.get(
+                "stat_name",
+                ""
+            )
+        )
+
+        progress_state = str(
+            progress.get(
+                "state",
+                ""
+            )
+        )
+
+        progress_message = str(
+            progress.get(
+                "message",
+                ""
+            )
+        )
+
+        current_value = progress.get(
+            "value"
+        )
+
+        final = bool(
+            progress.get(
+                "final",
+                False
+            )
+        )
+
+        # -------------------------------------------------
+        # STATUS COLOR
+        # -------------------------------------------------
+
+        if progress_state in (
+            "win",
+            "winning"
+        ):
+
+            status_color = self.green
+
+        elif progress_state in (
+            "loss",
+            "losing"
+        ):
+
+            status_color = graphics.Color(
+                255,
+                70,
+                70
+            )
+
+        elif progress_state in (
+            "push",
+            "pending"
+        ):
+
+            status_color = self.yellow
+
+        elif progress_state == "void":
+
+            status_color = self.gray
+
+        else:
+
+            status_color = self.white
+
+        # -------------------------------------------------
+        # CLEAR
+        # -------------------------------------------------
+
+        self.canvas.Clear()
+
+        # -------------------------------------------------
+        # HEADER
+        # -------------------------------------------------
+
+        header_text = (
+            "FINAL BET"
+            if final
+            else "MY BET"
+        )
+
+        self.draw_header(
+            league,
+            header_text
+        )
+
+        # -------------------------------------------------
+        # PLAYER PROP
+        # -------------------------------------------------
+
+        if bet_type == "player_prop":
+
+            # Player name
+            player_text = self.shorten(
+                selection,
+                15
+            )
+
+            self.draw_text(
+                self.small_font,
+                1,
+                13,
+                self.white,
+                player_text
+            )
+
+            # Stat name
+            stat_text = self.shorten(
+                stat_name,
+                15
+            )
+
+            self.draw_text(
+                self.small_font,
+                1,
+                20,
+                self.gray,
+                stat_text
+            )
+
+            # ---------------------------------------------
+            # VALUE / LINE
+            # ---------------------------------------------
+
+            if current_value is not None:
+
+                current_text = self.format_bet_number(
+                    current_value
+                )
+
+                line_text = self.format_bet_number(
+                    line
+                )
+
+                value_line = (
+                    f"{current_text}/{line_text}"
+                )
+
+            else:
+
+                line_text = self.format_bet_number(
+                    line
+                )
+
+                value_line = (
+                    f"{side} {line_text}"
+                )
+
+            self.draw_text(
+                self.font,
+                1,
+                31,
+                status_color,
+                self.shorten(
+                    value_line,
+                    10
+                )
+            )
+
+            # Show shortened status on the right.
+            status_short = (
+                self.format_bet_status(
+                    bet,
+                    progress
+                )
+            )
+
+            self.draw_text(
+                self.small_font,
+                39,
+                31,
+                status_color,
+                self.shorten(
+                    status_short,
+                    6
+                )
+            )
+
+        # -------------------------------------------------
+        # SPREAD
+        # -------------------------------------------------
+
+        elif bet_type == "spread":
+
+            team = self.shorten(
+                selection,
+                12
+            )
+
+            self.draw_text(
+                self.font,
+                1,
+                17,
+                self.white,
+                team
+            )
+
+            line_text = (
+                self.format_signed_bet_number(
+                    line
+                )
+            )
+
+            self.draw_text(
+                self.font,
+                1,
+                29,
+                self.yellow,
+                line_text
+            )
+
+            status_text = (
+                self.format_bet_status(
+                    bet,
+                    progress
+                )
+            )
+
+            self.draw_text(
+                self.small_font,
+                30,
+                29,
+                status_color,
+                self.shorten(
+                    status_text,
+                    8
+                )
+            )
+
+        # -------------------------------------------------
+        # MONEYLINE
+        # -------------------------------------------------
+
+        elif bet_type == "moneyline":
+
+            team = self.shorten(
+                selection,
+                12
+            )
+
+            self.draw_text(
+                self.font,
+                1,
+                17,
+                self.white,
+                team
+            )
+
+            self.draw_text(
+                self.font,
+                1,
+                29,
+                self.yellow,
+                "ML"
+            )
+
+            status_text = (
+                self.format_bet_status(
+                    bet,
+                    progress
+                )
+            )
+
+            self.draw_text(
+                self.font,
+                19,
+                29,
+                status_color,
+                self.shorten(
+                    status_text,
+                    7
+                )
+            )
+
+        # -------------------------------------------------
+        # GAME TOTAL
+        # -------------------------------------------------
+
+        elif bet_type == "total":
+
+            line_text = (
+                self.format_bet_number(
+                    line
+                )
+            )
+
+            bet_text = (
+                f"{side} {line_text}"
+            )
+
+            self.draw_text(
+                self.font,
+                1,
+                17,
+                self.white,
+                self.shorten(
+                    bet_text,
+                    10
+                )
+            )
+
+            if current_value is not None:
+
+                current_text = (
+                    self.format_bet_number(
+                        current_value
+                    )
+                )
+
+                self.draw_text(
+                    self.small_font,
+                    1,
+                    27,
+                    self.gray,
+                    f"TOTAL {current_text}"
+                )
+
+            status_text = (
+                self.format_bet_status(
+                    bet,
+                    progress
+                )
+            )
+
+            self.draw_text(
+                self.small_font,
+                1,
+                32,
+                status_color,
+                self.shorten(
+                    status_text,
+                    15
+                )
+            )
+
+        # -------------------------------------------------
+        # GENERIC FALLBACK
+        # -------------------------------------------------
+
+        else:
+
+            self.draw_text(
+                self.font,
+                1,
+                17,
+                self.white,
+                self.shorten(
+                    selection,
+                    10
+                )
+            )
+
+            self.draw_text(
+                self.small_font,
+                1,
+                29,
+                status_color,
+                self.shorten(
+                    progress_message,
+                    15
+                )
+            )
+
+        self.swap()
+
+        self.pause_frame(
+            seconds
+        )
+
+
+    # -----------------------------------------------------
+    # BET DISPLAY HELPERS
+    # -----------------------------------------------------
+
+    def format_bet_number(
+        self,
+        value
+    ):
+
+        if value is None:
+            return ""
+
+        try:
+
+            number = float(
+                value
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            return str(
+                value
+            )
+
+        if number.is_integer():
+
+            return str(
+                int(
+                    number
+                )
+            )
+
+        return (
+            f"{number:.1f}"
+        )
+
+
+    def format_signed_bet_number(
+        self,
+        value
+    ):
+
+        if value is None:
+            return ""
+
+        try:
+
+            number = float(
+                value
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            return str(
+                value
+            )
+
+        text = (
+            self.format_bet_number(
+                number
+            )
+        )
+
+        if number > 0:
+
+            return (
+                f"+{text}"
+            )
+
+        return text
+
+
+    def format_bet_status(
+        self,
+        bet,
+        progress
+    ):
+
+        state = str(
+            progress.get(
+                "state",
+                ""
+            )
+        )
+
+        final = bool(
+            progress.get(
+                "final",
+                False
+            )
+        )
+
+        value = progress.get(
+            "value"
+        )
+
+        line = bet.get(
+            "line"
+        )
+
+        side = str(
+            bet.get(
+                "side",
+                ""
+            )
+        ).lower()
+
+        # ---------------------------------------------
+        # FINAL STATES
+        # ---------------------------------------------
+
+        if final:
+
+            if state == "win":
+                return "WIN"
+
+            if state == "loss":
+                return "LOSS"
+
+            if state == "push":
+                return "PUSH"
+
+            if state == "void":
+                return "VOID"
+
+        # ---------------------------------------------
+        # PENDING
+        # ---------------------------------------------
+
+        if state == "pending":
+
+            return "PENDING"
+
+        # ---------------------------------------------
+        # PLAYER PROP / TOTAL
+        # ---------------------------------------------
+
+        if (
+            value is not None
+            and line is not None
+            and side in (
+                "over",
+                "under"
+            )
+        ):
+
+            try:
+
+                current = float(
+                    value
+                )
+
+                target = float(
+                    line
+                )
+
+            except (
+                TypeError,
+                ValueError
+            ):
+
+                return self.shorten(
+                    progress.get(
+                        "message",
+                        ""
+                    ),
+                    8
+                )
+
+            if side == "over":
+
+                difference = (
+                    current
+                    - target
+                )
+
+                if difference > 0:
+
+                    return (
+                        "+"
+                        + self.format_bet_number(
+                            difference
+                        )
+                    )
+
+                if difference < 0:
+
+                    return (
+                        "NEED "
+                        + self.format_bet_number(
+                            abs(
+                                difference
+                            )
+                        )
+                    )
+
+                return "ON LINE"
+
+            difference = (
+                target
+                - current
+            )
+
+            if difference > 0:
+
+                return (
+                    "BUF "
+                    + self.format_bet_number(
+                        difference
+                    )
+                )
+
+            if difference < 0:
+
+                return (
+                    "OVER "
+                    + self.format_bet_number(
+                        abs(
+                            difference
+                        )
+                    )
+                )
+
+            return "ON LINE"
+
+        # ---------------------------------------------
+        # SPREAD / MONEYLINE
+        # ---------------------------------------------
+
+        if state == "winning":
+            return "WINNING"
+
+        if state == "losing":
+            return "LOSING"
+
+        if state == "push":
+            return "PUSH"
+
+        return self.shorten(
+            progress.get(
+                "message",
+                ""
+            ),
+            8
+        )
+
 
     # -----------------------------------------------------
     # MESSAGE SCREEN
