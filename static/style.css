@@ -458,3 +458,263 @@ button:hover {
     accent-color:
         #27d17f;
 }
+
+/* =========================================================
+   FAVORITE TEAMS
+   ========================================================= */
+
+.favorite-sport {
+    margin-top: 20px;
+    padding: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.favorite-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.favorite-header strong {
+    font-size: 18px;
+}
+
+
+/* =========================================================
+   FAVORITE BEHAVIOR DROPDOWN
+   ========================================================= */
+
+.favorite-sport select {
+    width: 100%;
+    margin-top: 8px;
+    padding: 10px 12px;
+
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+
+    background: #181818;
+    color: #ffffff;
+
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.favorite-sport select:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+
+/* =========================================================
+   TEAM SEARCH
+   ========================================================= */
+
+.team-search {
+    box-sizing: border-box;
+
+    width: 100%;
+    margin-top: 14px;
+    margin-bottom: 10px;
+
+    padding: 10px 12px;
+
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+
+    background: #181818;
+    color: #ffffff;
+
+    font-size: 14px;
+}
+
+.team-search::placeholder {
+    color: #888888;
+}
+
+.team-search:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+
+/* =========================================================
+   TEAM LIST
+   ========================================================= */
+
+.team-list {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap: 8px;
+
+    max-height: 260px;
+    overflow-y: auto;
+
+    padding: 4px;
+}
+
+
+/* =========================================================
+   INDIVIDUAL TEAM
+   ========================================================= */
+
+.team-option {
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+
+    padding: 9px 10px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+
+    background: rgba(255, 255, 255, 0.025);
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.team-option:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.16);
+}
+
+
+/* =========================================================
+   TEAM CHECKBOX
+   ========================================================= */
+
+.team-option input[type="checkbox"] {
+    flex-shrink: 0;
+
+    width: 17px;
+    height: 17px;
+
+    cursor: pointer;
+
+    accent-color: #22c55e;
+}
+
+
+/* =========================================================
+   TEAM NAME
+   ========================================================= */
+
+.team-option span {
+    flex: 1;
+
+    min-width: 0;
+
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+
+/* =========================================================
+   ABBREVIATION
+   ========================================================= */
+
+.team-option small {
+    flex-shrink: 0;
+
+    color: #888888;
+
+    font-size: 11px;
+    font-weight: 600;
+
+    letter-spacing: 0.5px;
+}
+
+
+/* =========================================================
+   CHECKED TEAM HIGHLIGHT
+   ========================================================= */
+
+.team-option:has(
+    input[type="checkbox"]:checked
+) {
+    background: rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.35);
+}
+
+.team-option:has(
+    input[type="checkbox"]:checked
+) span {
+    color: #ffffff;
+}
+
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+.team-list::-webkit-scrollbar {
+    width: 7px;
+}
+
+.team-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.team-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 20px;
+}
+
+.team-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+
+/* =========================================================
+   COLLEGE FOOTBALL TEXT FIELD
+   ========================================================= */
+
+.favorite-sport input[type="text"] {
+    box-sizing: border-box;
+
+    width: 100%;
+    margin-top: 8px;
+
+    padding: 10px 12px;
+
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+
+    background: #181818;
+    color: #ffffff;
+
+    font-size: 14px;
+}
+
+.favorite-sport input[type="text"]:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (
+    max-width: 650px
+) {
+
+    .team-list {
+        grid-template-columns: 1fr;
+    }
+
+}
