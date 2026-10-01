@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
@@ -62,6 +61,10 @@
                 action="/save"
             >
 
+                <!-- ============================================= -->
+                <!-- SPORTS -->
+                <!-- ============================================= -->
+
                 <h2>
                     Sports
                 </h2>
@@ -74,6 +77,8 @@
 
                 <div class="sports-list">
 
+
+                    <!-- NFL -->
 
                     <label class="sport">
 
@@ -101,6 +106,8 @@
                     </label>
 
 
+                    <!-- NCAAF -->
+
                     <label class="sport">
 
                         <div>
@@ -127,6 +134,8 @@
                     </label>
 
 
+                    <!-- NBA -->
+
                     <label class="sport">
 
                         <div>
@@ -152,6 +161,8 @@
 
                     </label>
 
+
+                    <!-- MLB -->
 
                     <label class="sport">
 
@@ -182,15 +193,418 @@
                 </div>
 
 
+                <!-- ============================================= -->
+                <!-- FAVORITE TEAMS -->
+                <!-- ============================================= -->
+
+                <h2 class="display-heading">
+                    Favorite Teams
+                </h2>
+
+                <p class="description">
+                    Select favorite teams and choose whether
+                    their games should be prioritized or shown
+                    exclusively.
+                </p>
+
+
+                <!-- ============================================= -->
+                <!-- NFL FAVORITES -->
+                <!-- ============================================= -->
+
+                <div class="favorite-sport">
+
+                    <div class="favorite-header">
+
+                        <strong>
+                            NFL
+                        </strong>
+
+                    </div>
+
+
+                    <label class="field">
+
+                        <span>
+                            Favorite Game Behavior
+                        </span>
+
+                        <select
+                            name="nfl_favorite_mode"
+                        >
+
+                            <option
+                                value="all"
+                                {% if settings.favorites.nfl.mode == "all" %}
+                                    selected
+                                {% endif %}
+                            >
+                                All Games
+                            </option>
+
+                            <option
+                                value="prioritize"
+                                {% if settings.favorites.nfl.mode == "prioritize" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Prioritize Favorites
+                            </option>
+
+                            <option
+                                value="favorites_only"
+                                {% if settings.favorites.nfl.mode == "favorites_only" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Favorites Only
+                            </option>
+
+                        </select>
+
+                    </label>
+
+
+                    <input
+                        type="search"
+                        class="team-search"
+                        placeholder="Search NFL teams..."
+                    >
+
+
+                    <div class="team-list">
+
+                        {% for abbreviation, team_name in team_options.nfl %}
+
+                            <label
+                                class="team-option"
+                                data-team="{{ team_name|lower }} {{ abbreviation|lower }}"
+                            >
+
+                                <input
+                                    type="checkbox"
+                                    name="nfl_favorite_teams"
+                                    value="{{ abbreviation }}"
+
+                                    {% if abbreviation in settings.favorites.nfl.teams %}
+                                        checked
+                                    {% endif %}
+                                >
+
+                                <span>
+                                    {{ team_name }}
+                                </span>
+
+                                <small>
+                                    {{ abbreviation }}
+                                </small>
+
+                            </label>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- ============================================= -->
+                <!-- COLLEGE FOOTBALL FAVORITES -->
+                <!-- ============================================= -->
+
+                <div class="favorite-sport">
+
+                    <div class="favorite-header">
+
+                        <strong>
+                            College Football
+                        </strong>
+
+                    </div>
+
+
+                    <label class="field">
+
+                        <span>
+                            Favorite Game Behavior
+                        </span>
+
+                        <select
+                            name="ncaaf_favorite_mode"
+                        >
+
+                            <option
+                                value="all"
+                                {% if settings.favorites.ncaaf.mode == "all" %}
+                                    selected
+                                {% endif %}
+                            >
+                                All Games
+                            </option>
+
+                            <option
+                                value="prioritize"
+                                {% if settings.favorites.ncaaf.mode == "prioritize" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Prioritize Favorites
+                            </option>
+
+                            <option
+                                value="favorites_only"
+                                {% if settings.favorites.ncaaf.mode == "favorites_only" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Favorites Only
+                            </option>
+
+                        </select>
+
+                    </label>
+
+
+                    <label class="field">
+
+                        <span>
+                            Favorite Team Abbreviations
+                        </span>
+
+                        <input
+                            type="text"
+                            name="ncaaf_favorite_teams_text"
+                            placeholder="UGA, GT, ALA"
+                            value="{{ settings.favorites.ncaaf.teams | join(', ') }}"
+                        >
+
+                    </label>
+
+                    <p class="description">
+                        Enter college team abbreviations separated
+                        by commas.
+                    </p>
+
+                </div>
+
+
+                <!-- ============================================= -->
+                <!-- NBA FAVORITES -->
+                <!-- ============================================= -->
+
+                <div class="favorite-sport">
+
+                    <div class="favorite-header">
+
+                        <strong>
+                            NBA
+                        </strong>
+
+                    </div>
+
+
+                    <label class="field">
+
+                        <span>
+                            Favorite Game Behavior
+                        </span>
+
+                        <select
+                            name="nba_favorite_mode"
+                        >
+
+                            <option
+                                value="all"
+                                {% if settings.favorites.nba.mode == "all" %}
+                                    selected
+                                {% endif %}
+                            >
+                                All Games
+                            </option>
+
+                            <option
+                                value="prioritize"
+                                {% if settings.favorites.nba.mode == "prioritize" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Prioritize Favorites
+                            </option>
+
+                            <option
+                                value="favorites_only"
+                                {% if settings.favorites.nba.mode == "favorites_only" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Favorites Only
+                            </option>
+
+                        </select>
+
+                    </label>
+
+
+                    <input
+                        type="search"
+                        class="team-search"
+                        placeholder="Search NBA teams..."
+                    >
+
+
+                    <div class="team-list">
+
+                        {% for abbreviation, team_name in team_options.nba %}
+
+                            <label
+                                class="team-option"
+                                data-team="{{ team_name|lower }} {{ abbreviation|lower }}"
+                            >
+
+                                <input
+                                    type="checkbox"
+                                    name="nba_favorite_teams"
+                                    value="{{ abbreviation }}"
+
+                                    {% if abbreviation in settings.favorites.nba.teams %}
+                                        checked
+                                    {% endif %}
+                                >
+
+                                <span>
+                                    {{ team_name }}
+                                </span>
+
+                                <small>
+                                    {{ abbreviation }}
+                                </small>
+
+                            </label>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- ============================================= -->
+                <!-- MLB FAVORITES -->
+                <!-- ============================================= -->
+
+                <div class="favorite-sport">
+
+                    <div class="favorite-header">
+
+                        <strong>
+                            MLB
+                        </strong>
+
+                    </div>
+
+
+                    <label class="field">
+
+                        <span>
+                            Favorite Game Behavior
+                        </span>
+
+                        <select
+                            name="mlb_favorite_mode"
+                        >
+
+                            <option
+                                value="all"
+                                {% if settings.favorites.mlb.mode == "all" %}
+                                    selected
+                                {% endif %}
+                            >
+                                All Games
+                            </option>
+
+                            <option
+                                value="prioritize"
+                                {% if settings.favorites.mlb.mode == "prioritize" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Prioritize Favorites
+                            </option>
+
+                            <option
+                                value="favorites_only"
+                                {% if settings.favorites.mlb.mode == "favorites_only" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Favorites Only
+                            </option>
+
+                        </select>
+
+                    </label>
+
+
+                    <input
+                        type="search"
+                        class="team-search"
+                        placeholder="Search MLB teams..."
+                    >
+
+
+                    <div class="team-list">
+
+                        {% for abbreviation, team_name in team_options.mlb %}
+
+                            <label
+                                class="team-option"
+                                data-team="{{ team_name|lower }} {{ abbreviation|lower }}"
+                            >
+
+                                <input
+                                    type="checkbox"
+                                    name="mlb_favorite_teams"
+                                    value="{{ abbreviation }}"
+
+                                    {% if abbreviation in settings.favorites.mlb.teams %}
+                                        checked
+                                    {% endif %}
+                                >
+
+                                <span>
+                                    {{ team_name }}
+                                </span>
+
+                                <small>
+                                    {{ abbreviation }}
+                                </small>
+
+                            </label>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- ============================================= -->
+                <!-- DISPLAY -->
+                <!-- ============================================= -->
+
                 <h2 class="display-heading">
                     Display
                 </h2>
+
 
                 <div class="filter-group">
 
                     <strong>
                         Games to Show
                     </strong>
+
+
+                    <!-- ALL -->
 
                     <label class="radio-option">
 
@@ -211,6 +625,8 @@
                     </label>
 
 
+                    <!-- LIVE + UPCOMING -->
+
                     <label class="radio-option">
 
                         <input
@@ -229,6 +645,8 @@
 
                     </label>
 
+
+                    <!-- LIVE ONLY -->
 
                     <label class="radio-option">
 
@@ -250,6 +668,11 @@
 
                 </div>
 
+
+                <!-- ============================================= -->
+                <!-- SECONDS PER GAME -->
+                <!-- ============================================= -->
+
                 <label class="field">
 
                     <span>
@@ -267,6 +690,10 @@
                 </label>
 
 
+                <!-- ============================================= -->
+                <!-- SAVE -->
+                <!-- ============================================= -->
+
                 <button type="submit">
                     Save Settings
                 </button>
@@ -277,6 +704,81 @@
         </section>
 
     </main>
+
+
+    <!-- ============================================= -->
+    <!-- TEAM SEARCH -->
+    <!-- ============================================= -->
+
+    <script>
+
+        document
+            .querySelectorAll(
+                ".team-search"
+            )
+            .forEach(
+                function(searchInput) {
+
+                    searchInput.addEventListener(
+                        "input",
+                        function() {
+
+                            const query = (
+                                searchInput
+                                    .value
+                                    .trim()
+                                    .toLowerCase()
+                            );
+
+                            const container = (
+                                searchInput
+                                    .closest(
+                                        ".favorite-sport"
+                                    )
+                            );
+
+                            const teams = (
+                                container
+                                    .querySelectorAll(
+                                        ".team-option"
+                                    )
+                            );
+
+                            teams.forEach(
+                                function(team) {
+
+                                    const searchText = (
+                                        team.dataset.team
+                                        || ""
+                                    );
+
+                                    if (
+                                        searchText.includes(
+                                            query
+                                        )
+                                    ) {
+
+                                        team.style.display = "";
+
+                                    }
+
+                                    else {
+
+                                        team.style.display = "none";
+
+                                    }
+
+                                }
+                            );
+
+                        }
+                    );
+
+                }
+            );
+
+    </script>
+
 
 </body>
 

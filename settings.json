@@ -5,6 +5,29 @@
         "nba": false,
         "mlb": true
     },
+    "favorites": {
+        "nfl": {
+            "mode": "prioritize",
+            "teams": [
+                "ATL",
+                "PIT"
+            ]
+        },
+        "ncaaf": {
+            "mode": "all",
+            "teams": []
+        },
+        "nba": {
+            "mode": "all",
+            "teams": []
+        },
+        "mlb": {
+            "mode": "favorites_only",
+            "teams": [
+                "ATL"
+            ]
+        }
+    },
     "display": {
         "seconds_per_game": 20,
         "game_filter": "live_upcoming"

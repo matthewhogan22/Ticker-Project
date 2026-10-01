@@ -37,6 +37,95 @@ def should_show_game(game, game_filter):
 
     return True
 
+def is_favorite_game(
+    game,
+    favorite_teams
+):
+
+    favorite_teams = {
+        str(team).upper()
+        for team in favorite_teams
+    }
+
+    away_team = str(
+        game.get(
+            "away_team",
+            ""
+        )
+    ).upper()
+
+    home_team = str(
+        game.get(
+            "home_team",
+            ""
+        )
+    ).upper()
+
+    return (
+        away_team in favorite_teams
+        or home_team in favorite_teams
+    )
+
+
+def apply_team_preferences(
+    games,
+    favorite_teams,
+    favorite_mode
+):
+
+    game_items = list(
+        games.items()
+    )
+
+    if favorite_mode == "favorites_only":
+
+        return [
+            (
+                game_name,
+                game
+            )
+            for game_name, game
+            in game_items
+            if is_favorite_game(
+                game,
+                favorite_teams
+            )
+        ]
+
+    if favorite_mode == "prioritize":
+
+        favorite_games = []
+        other_games = []
+
+        for game_name, game in game_items:
+
+            item = (
+                game_name,
+                game
+            )
+
+            if is_favorite_game(
+                game,
+                favorite_teams
+            ):
+
+                favorite_games.append(
+                    item
+                )
+
+            else:
+
+                other_games.append(
+                    item
+                )
+
+        return (
+            favorite_games
+            + other_games
+        )
+
+    return game_items
+
 
 def get_enabled_sports(
     settings
@@ -151,11 +240,39 @@ def main():
 
                 continue
 
+            sport_favorites = (
+                settings
+                .get(
+                    "favorites",
+                    {}
+                )
+                .get(
+                    sport,
+                    {}
+                )
+            )
+
+            favorite_mode = sport_favorites.get(
+                "mode",
+                "all"
+            )
+
+            favorite_teams = sport_favorites.get(
+                "teams",
+                []
+            )
+
+            ordered_games = apply_team_preferences(
+                games,
+                favorite_teams,
+                favorite_mode
+            )
+
             # Reload settings here as well so
             # changes don't require finishing
             # the entire ticker rotation.
 
-            for game_name, game in games.items():
+            for game_name, game in ordered_games:
 
                 latest_settings = (
                     load_settings()

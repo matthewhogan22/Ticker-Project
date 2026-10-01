@@ -19,6 +19,26 @@ DEFAULT_SETTINGS = {
         "nba": True,
         "mlb": True,
     },
+
+    "favorites": {
+        "nfl": {
+            "mode": "all",
+            "teams": [],
+        },
+        "ncaaf": {
+            "mode": "all",
+            "teams": [],
+        },
+        "nba": {
+            "mode": "all",
+            "teams": [],
+        },
+        "mlb": {
+            "mode": "all",
+            "teams": [],
+        },
+    },
+
     "display": {
         "seconds_per_game": 8,
         "game_filter": "live_upcoming",
@@ -68,12 +88,37 @@ def load_settings():
         {}
     )
 
+    settings.setdefault(
+        "favorites",
+        {}
+    )
+
     # Make sure every sport has a value.
     for sport, default_value in DEFAULT_SETTINGS["sports"].items():
 
         settings["sports"].setdefault(
             sport,
             default_value
+        )
+
+    # Make sure every sport has favorite settings.
+    for sport, default_value in DEFAULT_SETTINGS["favorites"].items():
+
+        settings["favorites"].setdefault(
+            sport,
+            copy.deepcopy(default_value)
+        )
+
+        settings["favorites"][sport].setdefault(
+            "mode",
+            default_value["mode"]
+        )
+
+        settings["favorites"][sport].setdefault(
+            "teams",
+            copy.deepcopy(
+                default_value["teams"]
+            )
         )
 
     settings["display"].setdefault(
