@@ -1420,25 +1420,34 @@ class ScoreboardDisplay:
                         )
                     )
 
-                    # Team abbreviation
+                    # Move the whole field-position display
+                    # 3 pixels to the right.
+                    field_x = 43
+
                     self.draw_text(
                         self.small_font,
-                        40,
+                        field_x,
                         28,
                         self.gray,
                         field_team
                     )
 
-                    # Yard line
+                    # 4x6 font is roughly 4 pixels per character.
                     #
-                    # Three 4x6 characters normally consume
-                    # approximately 12 pixels.
-                    #
-                    # Start yardage at x=51 instead of x=52
-                    # to tighten the normal gap.
+                    # Put the yard line immediately after the
+                    # abbreviation, plus 1 extra pixel of spacing.
+                    yard_x = (
+                        field_x
+                        + (
+                            len(field_team)
+                            * 4
+                        )
+                        + 1
+                    )
+
                     self.draw_text(
                         self.small_font,
-                        51,
+                        yard_x,
                         28,
                         self.gray,
                         yard_line
@@ -1448,7 +1457,7 @@ class ScoreboardDisplay:
 
                     self.draw_text(
                         self.small_font,
-                        40,
+                        43,
                         28,
                         self.gray,
                         self.shorten(
