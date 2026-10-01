@@ -298,14 +298,61 @@ def get_events(
         .upper()
     )
 
+    now = datetime.now(
+        timezone.utc
+    )
+
+    starts_after = (
+        now
+        .isoformat()
+        .replace(
+            "+00:00",
+            "Z"
+        )
+    )
+
+    starts_before = (
+        now
+        .replace(
+            hour=23,
+            minute=59,
+            second=59,
+            microsecond=0
+        )
+        + timedelta(
+            days=14
+        )
+    )
+
+    starts_before = (
+        starts_before
+        .isoformat()
+        .replace(
+            "+00:00",
+            "Z"
+        )
+    )
+
     payload = api_get(
         "events",
         {
             "leagueID":
                 league_id,
 
-            "oddsPresent":
+            "oddsAvailable":
                 "true",
+
+            "ended":
+                "false",
+
+            "cancelled":
+                "false",
+
+            "startsAfter":
+                starts_after,
+
+            "startsBefore":
+                starts_before,
 
             "limit":
                 limit,
