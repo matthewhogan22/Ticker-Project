@@ -367,7 +367,7 @@ cd ~
 Clone the repository:
 
 ```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
+git clone https://github.com/matthewhogan22/Ticker-Project.git
 ```
 
 Enter the project directory:
@@ -1522,12 +1522,8 @@ ESPN, NFL, MLB, team names, logos, and related marks are the property of their r
 
 # License
 
-Add the license for this repository here.
-
-For example:
-
 ```text
-MIT License
+Apache 2.0
 ```
 
 if you choose to release the project under the MIT License.
